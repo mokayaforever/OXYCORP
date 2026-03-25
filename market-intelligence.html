@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OXYCORP</title>
+  <link rel="stylesheet" href="global.css" />
+  <style>
+    .market-hero { padding: 7rem 0 4rem; }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 3rem;
+      padding: 1.2rem 1.5rem; background: var(--surface);
+      border: 1px solid var(--border); border-radius: var(--r);
+    }
+    .filter-btn {
+      font-family: var(--font-m); font-size: 0.65rem; text-transform: uppercase;
+      letter-spacing: 0.1em; padding: 0.4rem 1rem; border-radius: 2px;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--muted); cursor: pointer; transition: all 0.2s;
+    }
+    .filter-btn:hover, .filter-btn.active { background: var(--gold-dim); border-color: var(--border); color: var(--gold); }
+
+    /* Grid */
+    .market-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
+    .market-left { display: flex; flex-direction: column; gap: 2rem; }
+    .market-right { display: flex; flex-direction: column; gap: 2rem; }
+
+    /* Chart card */
+    .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 2rem; }
+    .chart-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.8rem; }
+    .chart-title { font-family: var(--font-d); font-size: 1.3rem; font-weight: 600; }
+    .chart-subtitle { color: var(--muted); font-size: 0.82rem; margin-top: 0.3rem; }
+    canvas { width: 100% !important; }
+
+    /* Genre cards */
+    .genre-list { display: flex; flex-direction: column; gap: 0.8rem; }
+    .genre-row {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 0.9rem 1rem; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: var(--r);
+      transition: border-color 0.2s;
+    }
+    .genre-row:hover { border-color: rgba(200,168,75,0.35); }
+    .genre-rank { font-family: var(--font-m); font-size: 0.75rem; font-weight: 700; color: var(--gold); width: 24px; }
+    .genre-name { flex: 1; font-size: 0.9rem; }
+    .genre-bar-wrap { width: 120px; }
+    .genre-bar-small { height: 4px; background: var(--surface); border-radius: 99px; overflow: hidden; }
+    .genre-bar-inner { height: 100%; background: linear-gradient(90deg, var(--gold), var(--teal)); border-radius: 99px; }
+    .genre-pct { font-family: var(--font-m); font-size: 0.68rem; color: var(--teal); min-width: 36px; text-align: right; }
+    .genre-trend { font-family: var(--font-m); font-size: 0.65rem; }
+
+    /* Opportunity cards */
+    .opp-card {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 1.4rem; transition: all 0.2s;
+    }
+    .opp-card:hover { border-color: rgba(29,228,180,0.4); transform: translateY(-2px); }
+    .opp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem; }
+    .opp-title { font-family: var(--font-d); font-size: 1.1rem; font-weight: 600; }
+    .opp-pay { font-family: var(--font-m); font-size: 0.68rem; color: var(--teal); }
+    .opp-meta { font-size: 0.82rem; color: var(--muted); line-height: 1.65; }
+    .opp-tags { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-top: 0.8rem; }
+
+    /* Live market ticker */
+    .ticker-wrap { overflow: hidden; position: relative; }
+    .ticker {
+      display: flex; gap: 3rem; animation: ticker 20s linear infinite;
+      width: max-content; padding: 1rem 0;
+    }
+    .ticker:hover { animation-play-state: paused; }
+    .ticker-item {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-family: var(--font-m); font-size: 0.72rem; white-space: nowrap;
+    }
+    .ticker-item .up { color: var(--teal); }
+    .ticker-item .dn { color: var(--rose); }
+    @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+    @media (max-width: 900px) { .market-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <section class="market-hero">
+      <div class="container">
+        
+        <h1>Market <em>Intelligence</em></h1>
+        <p style="color:var(--muted);max-width:540px;margin-top:1rem;">
+          Real-time music industry data processed by Python ML pipelines. Genre trends, platform metrics, sync opportunities, and market signals updated continuously.
+        </p>
+
+        <!-- Live Ticker -->
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-top:2.5rem;overflow:hidden;">
+          <div style="display:flex;align-items:center;gap:1rem;padding:0.7rem 1.2rem;border-bottom:1px solid var(--border);">
+            <div class="pulse-dot" style="width:8px;height:8px;background:var(--teal);border-radius:50%;animation:pulse-ring 2s infinite;"></div>
+            <span style="font-family:var(--font-m);font-size:0.62rem;text-transform:uppercase;letter-spacing:0.15em;color:var(--muted);">Live Market Feed · Python ML Engine</span>
+          </div>
+          <div class="ticker-wrap" style="padding:0 1.2rem;">
+            <div class="ticker" id="tickerEl"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="container" style="padding-bottom:6rem;">
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <span style="font-family:var(--font-m);font-size:0.62rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);align-self:center;">Filter:</span>
+        <button class="filter-btn active">All Genres</button>
+        <button class="filter-btn">Afrobeats</button>
+        <button class="filter-btn">Hip-Hop</button>
+        <button class="filter-btn">R&B</button>
+        <button class="filter-btn">Electronic</button>
+        <button class="filter-btn">Indie</button>
+        <button class="filter-btn">Pop</button>
+        <button class="filter-btn">Amapiano</button>
+      </div>
+
+      <div class="market-grid">
+        <div class="market-left">
+          <!-- Streaming Trend Chart -->
+          <div class="chart-card fade-up">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-title">Global Streaming Trends</div>
+                <div class="chart-subtitle">Monthly streams by genre · 12-month ML forecast</div>
+              </div>
+              <span class="tag tag-teal">Live Data</span>
+            </div>
+            <canvas id="streamChart" height="220"></canvas>
+          </div>
+
+          <!-- Genre Rankings -->
+          <div class="chart-card fade-up">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-title">Genre Market Share</div>
+                <div class="chart-subtitle">Streaming market share · Growth vs. last quarter</div>
+              </div>
+              <span class="tag tag-gold">ML Ranked</span>
+            </div>
+            <div class="genre-list" id="genreList"></div>
+          </div>
+
+          <!-- Revenue by Stream -->
+          <div class="chart-card fade-up">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-title">Revenue Per 1M Streams by Platform</div>
+                <div class="chart-subtitle">Average artist payout · USD · 2025 data</div>
+              </div>
+            </div>
+            <canvas id="revenueChart" height="180"></canvas>
+          </div>
+        </div>
+
+        <div class="market-right">
+          <!-- Opportunities -->
+          <div class="chart-card fade-up">
+            <div class="chart-card-header">
+              <div>
+                <div class="chart-title">Sync Opportunities</div>
+                <div class="chart-subtitle">AI-matched open briefs</div>
+              </div>
+              <span class="tag tag-violet">New</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.9rem;" id="oppList"></div>
+          </div>
+
+          <!-- Key Stats -->
+          <div class="chart-card fade-up">
+            <div class="chart-card-header">
+              <div><div class="chart-title">Platform Stats</div><div class="chart-subtitle">Key metrics for artists · 2025</div></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:1rem;" id="platformStats"></div>
+          </div>
+
+          <!-- ML Signal -->
+          <div class="chart-card fade-up" style="background:linear-gradient(135deg,var(--surface),rgba(29,228,180,0.04));border-color:var(--border2);">
+            <div class="sec-label" style="justify-content:flex-start;margin-bottom:1rem;">ML Signal</div>
+            <h3 style="font-family:var(--font-d);font-size:1.4rem;margin-bottom:0.8rem;">Top Emerging Trend</h3>
+            <p style="color:var(--muted);font-size:0.88rem;line-height:1.75;margin-bottom:1.2rem;">
+              <strong style="color:var(--teal)">Afrobeats × Electronic fusion</strong> is showing the highest velocity growth signal in our ML trend detection model — up <strong style="color:var(--teal)">+340%</strong> YoY on TikTok.
+            </p>
+            <p style="color:var(--muted);font-size:0.88rem;line-height:1.75;margin-bottom:1.5rem;">
+              Sync supervisors in the advertising space are actively seeking tracks in this niche. Our Python pipeline detected 47 open briefs in the last 30 days.
+            </p>
+            <a href="advisor.html" class="btn btn-teal" style="width:100%;justify-content:center;">Ask AI About This Trend</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/shared.js"></script>
+  <script>
+    // ── Ticker ──
+    const tickerData = [
+      { label:'Afrobeats Global', val:'+18.4%', up:true },
+      { label:'Amapiano Streams', val:'+27.1%', up:true },
+      { label:'Spotify Payouts', val:'$0.003/stream', up:false },
+      { label:'Apple Music', val:'$0.007/stream', up:true },
+      { label:'TikTok Sounds', val:'+340M/day', up:true },
+      { label:'Sync Market', val:'$2.8B', up:true },
+      { label:'Hip-Hop Market Share', val:'24.1%', up:false },
+      { label:'Live Music Revenue', val:'+22%', up:true },
+      { label:'Indie Artist Revenue', val:'+31%', up:true },
+      { label:'NFT Music Sales', val:'-12%', up:false },
+      { label:'Podcast Music Licensing', val:'+45%', up:true },
+      { label:'YouTube Music Subs', val:'100M+', up:true },
+    ];
+    const ticker = document.getElementById('tickerEl');
+    const items = [...tickerData, ...tickerData].map(d =>
+      `<div class="ticker-item"><span>${d.label}</span><span class="${d.up?'up':'dn'}">${d.val}</span></div>`
+    ).join('');
+    ticker.innerHTML = items;
+
+    // ── Filter buttons ──
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+
+    // ── Genre list ──
+    const genres = [
+      { name:'Hip-Hop / Rap',      pct:24.1, trend:'+2.1%', up:false },
+      { name:'Pop',                pct:21.8, trend:'-0.5%', up:false },
+      { name:'R&B / Soul',         pct:14.7, trend:'+1.2%', up:true  },
+      { name:'Afrobeats',          pct:11.3, trend:'+18.4%',up:true  },
+      { name:'Electronic / EDM',   pct:9.2,  trend:'+3.7%', up:true  },
+      { name:'Indie / Alternative',pct:7.8,  trend:'+0.9%', up:true  },
+      { name:'Amapiano',           pct:4.1,  trend:'+27.1%',up:true  },
+      { name:'Latin',              pct:5.6,  trend:'+6.3%', up:true  },
+    ];
+    document.getElementById('genreList').innerHTML = genres.map((g, i) => `
+      <div class="genre-row">
+        <div class="genre-rank">#${i+1}</div>
+        <div class="genre-name">${g.name}</div>
+        <div class="genre-bar-wrap">
+          <div class="genre-bar-small"><div class="genre-bar-inner" style="width:${g.pct/25*100}%"></div></div>
+        </div>
+        <div class="genre-pct">${g.pct}%</div>
+        <div class="genre-trend ${g.up?'trend-up':'trend-down'}">${g.trend}</div>
+      </div>
+    `).join('');
+
+    // ── Sync Opportunities ──
+    const opps = [
+      { title:'TV Drama Soundtrack', pay:'$3,000–8,000', meta:'US network drama series seeking emotional, atmospheric R&B or neo-soul tracks. Instrumental versions required.', tags:['R&B','Instrumental','Exclusive'] },
+      { title:'Global Ad Campaign', pay:'$5,000–15,000', meta:'International brand campaign seeking upbeat Afrobeats or Afropop tracks with positive energy. 30–60 second edits.', tags:['Afrobeats','Commercial','Non-Exclusive'] },
+      { title:'Gaming Soundtrack', pay:'$500–2,000/track', meta:'Indie game studio seeking 20 electronic/ambient tracks for open-world adventure game. Buyout deal.', tags:['Electronic','Ambient','Buyout'] },
+    ];
+    document.getElementById('oppList').innerHTML = opps.map(o => `
+      <div class="opp-card">
+        <div class="opp-header">
+          <div class="opp-title">${o.title}</div>
+          <div class="opp-pay">${o.pay}</div>
+        </div>
+        <div class="opp-meta">${o.meta}</div>
+        <div class="opp-tags">${o.tags.map(t=>`<span class="tag tag-gold" style="font-size:0.55rem;">${t}</span>`).join('')}</div>
+      </div>
+    `).join('');
+
+    // ── Platform Stats ──
+    const platforms = [
+      { name:'Spotify',     stat:'$0.003/stream',   sub:'608M active users' },
+      { name:'Apple Music', stat:'$0.007/stream',   sub:'100M+ subscribers' },
+      { name:'YouTube Music',stat:'$0.0008/view',   sub:'2.7B monthly users' },
+      { name:'TIDAL',       stat:'$0.012/stream',   sub:'Artist-friendly rates' },
+    ];
+    document.getElementById('platformStats').innerHTML = platforms.map(p => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:0.9rem 0;border-bottom:1px solid var(--border);">
+        <div>
+          <div style="font-family:var(--font-m);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;">${p.name}</div>
+          <div style="color:var(--muted);font-size:0.78rem;margin-top:0.2rem;">${p.sub}</div>
+        </div>
+        <div style="font-family:var(--font-m);font-size:0.78rem;color:var(--gold);">${p.stat}</div>
+      </div>
+    `).join('');
+
+    // ── Charts (vanilla canvas) ──
+    function drawLineChart(canvasId, labels, datasets, height) {
+      const canvas = document.getElementById(canvasId);
+      canvas.height = height || 220;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.offsetWidth || 600;
+      const h = canvas.height;
+      canvas.width = w;
+      ctx.clearRect(0,0,w,h);
+
+      const pad = { t:20, r:20, b:40, l:50 };
+      const chartW = w - pad.l - pad.r;
+      const chartH = h - pad.t - pad.b;
+
+      const allVals = datasets.flatMap(d=>d.data);
+      const maxVal = Math.max(...allVals) * 1.1;
+      const minVal = 0;
+
+      // Grid
+      [0.25, 0.5, 0.75, 1.0].forEach(f => {
+        const y = pad.t + chartH * (1 - f);
+        ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + chartW, y);
+        ctx.strokeStyle = 'rgba(200,168,75,0.08)'; ctx.lineWidth = 1; ctx.stroke();
+        ctx.fillStyle = 'rgba(122,118,144,0.6)';
+        ctx.font = '10px "Space Mono",monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(Math.round(maxVal * f / 1000) + 'K', pad.l - 8, y + 4);
+      });
+
+      // Labels
+      ctx.fillStyle = 'rgba(122,118,144,0.7)'; ctx.font = '10px "Space Mono",monospace'; ctx.textAlign = 'center';
+      labels.forEach((l, i) => {
+        const x = pad.l + (i / (labels.length-1)) * chartW;
+        ctx.fillText(l, x, h - 8);
+      });
+
+      // Lines
+      const colours = ['rgba(200,168,75,0.9)','rgba(29,228,180,0.8)','rgba(167,139,250,0.7)'];
+      datasets.forEach((ds, di) => {
+        ctx.beginPath();
+        ds.data.forEach((v, i) => {
+          const x = pad.l + (i / (ds.data.length-1)) * chartW;
+          const y = pad.t + chartH * (1 - (v - minVal) / (maxVal - minVal));
+          i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.strokeStyle = colours[di]; ctx.lineWidth = 2.5; ctx.stroke();
+
+        // Fill
+        ctx.lineTo(pad.l + chartW, pad.t + chartH); ctx.lineTo(pad.l, pad.t + chartH);
+        ctx.closePath();
+        const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + chartH);
+        grad.addColorStop(0, colours[di].replace('0.9','0.15').replace('0.8','0.12').replace('0.7','0.1'));
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad; ctx.fill();
+      });
+    }
+
+    function drawBarChart(canvasId, labels, data, height) {
+      const canvas = document.getElementById(canvasId);
+      canvas.height = height || 180;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.offsetWidth || 600;
+      const h = canvas.height;
+      canvas.width = w;
+      ctx.clearRect(0,0,w,h);
+      const pad = {t:20,r:20,b:50,l:50};
+      const chartW = w - pad.l - pad.r;
+      const chartH = h - pad.t - pad.b;
+      const max = Math.max(...data) * 1.15;
+      const barW = chartW / data.length * 0.55;
+      const colours = ['rgba(200,168,75,0.8)','rgba(29,228,180,0.7)','rgba(167,139,250,0.7)','rgba(255,78,126,0.7)'];
+      data.forEach((v, i) => {
+        const x = pad.l + (i + 0.5) * (chartW / data.length) - barW/2;
+        const barH = (v / max) * chartH;
+        const y = pad.t + chartH - barH;
+        const grad = ctx.createLinearGradient(0, y, 0, y + barH);
+        grad.addColorStop(0, colours[i % colours.length]);
+        grad.addColorStop(1, colours[i % colours.length].replace('0.8','0.3').replace('0.7','0.25'));
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, y, barW, barH);
+        ctx.fillStyle = 'rgba(240,237,224,0.6)'; ctx.font = '11px "Space Mono",monospace'; ctx.textAlign = 'center';
+        ctx.fillText('$' + v.toFixed(3), x + barW/2, y - 6);
+        ctx.fillStyle = 'rgba(122,118,144,0.7)'; ctx.font = '10px "Space Mono",monospace';
+        ctx.fillText(labels[i], x + barW/2, h - 10);
+      });
+    }
+
+    window.addEventListener('load', () => {
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      drawLineChart('streamChart', months, [
+        { data: [820,910,980,1050,1180,1240,1310,1390,1450,1520,1640,1780] },
+        { data: [420,460,510,580,640,720,810,890,970,1050,1120,1200] },
+        { data: [280,310,340,370,410,460,520,580,640,710,780,860] },
+      ]);
+      drawBarChart('revenueChart', ['Spotify','Apple','TIDAL','Amazon','YouTube'], [3.0, 7.0, 12.0, 4.0, 0.8], 180);
+    });
+
+    const observer = new IntersectionObserver(e => e.forEach(el => { if(el.isIntersecting) el.target.style.opacity=1; }),{threshold:0.1});
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

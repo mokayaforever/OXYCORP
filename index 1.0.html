@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OXYCORP</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="global.css"/>
+</head>
+<body>
+
+<!-- NOISE OVERLAY -->
+<div class="noise"></div>
+
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <div class="nav__logo">
+    <span class="logo-icon">♪</span>
+    <span class="logo-text">OXYCORP</span>
+  </div>
+  <ul class="nav__links">
+    <li><a href="#home" class="nav-link active" data-section="home">Home</a></li>
+    <li><a href="market-intelligence.html"class="nav-link" data-section="market intelligence">Market Intelligence</a></li>
+    <li><a href="roadmap.html" class="nav-link" data-section="roadmap">Roadmap</a></li>
+    <li><a href="career-analysis.html" class="nav-link" data-section="career analysis">Career Analysis</a></li>
+    <li><a href="submit-music.html" class="nav-link" data-section="career analysis">Submit music</a></li>
+    <li><a href="#about" class="nav-link" data-section="about">About</a></li>
+  </ul>
+  <div class="nav__actions">
+    <div id="nav-auth-guest" class="nav__auth">
+      <button class="btn btn--ghost" onclick="openModal('login')">Sign In</button>
+      <button class="btn btn--accent" onclick="openModal('register')">Join Now</button>
+    </div>
+    <div id="nav-auth-user" class="nav__auth hidden">
+      <span class="nav__username" id="nav-username"></span>
+      <button class="btn btn--ghost" onclick="logout()">Logout</button>
+    </div>
+  </div>
+  <button class="nav__burger" id="burger" onclick="toggleMobile()">☰</button>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-menu" id="mobile-menu">
+  <a href="#home" onclick="closeMobile()">Home</a>
+  <a href="#musicians" onclick="closeMobile()">Musicians</a>
+  <a href="#coaches" onclick="closeMobile()">Coaches</a>
+  <a href="#recommend" onclick="closeMobile()">Guidance</a>
+  <a href="#about" onclick="closeMobile()">About</a>
+  <button class="btn btn--accent mt" onclick="openModal('login');closeMobile()">Sign In</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ HERO -->
+<section class="hero" id="home">
+  <div class="hero__bg">
+    <div class="hero__orb hero__orb--1"></div>
+    <div class="hero__orb hero__orb--2"></div>
+    <div class="hero__orb hero__orb--3"></div>
+    <div class="soundwave">
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+  </div>
+  <div class="hero__content">
+    <div class="hero__badge">✦ Your Career. Your Sound. Your Path.</div>
+    <h1 class="hero__title">
+      Turn Your<br/>
+      <em>Musical Passion</em><br/>
+      Into a Career
+    </h1>
+    <p class="hero__sub">AI-powered guidance, world-class coaches, and a roadmap built for the way the music industry actually works today.</p>
+    <div class="hero__cta">
+      <button class="btn btn--hero" onclick="scrollTo('recommend')">Get My Guidance ↗</button>
+      <button class="btn btn--outline" onclick="scrollTo('coaches')">Meet Coaches</button>
+    </div>
+  
+  </div>
+  <div class="hero__scroll" onclick="scrollTo('musicians')">
+    <span>Scroll</span><div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ MUSICIANS -->
+<section class="section" id="musicians">
+  <div class="container">
+    <div class="section__header">
+      <span class="section__tag">For Musicians</span>
+      <h2 class="section__title">Built for Every Stage<br/><em>of Your Journey</em></h2>
+      <p class="section__sub">Whether you just picked up your first instrument or you're performing internationally, OXYCORP meets you where you are.</p>
+    </div>
+
+    <div class="journey-tabs">
+      <button class="journey-tab active" data-tab="beginner">Beginner</button>
+      <button class="journey-tab" data-tab="intermediate">Intermediate</button>
+      <button class="journey-tab" data-tab="advanced">Advanced</button>
+    </div>
+
+    <div class="journey-panels">
+      <div class="journey-panel active" id="tab-beginner">
+        <div class="journey-grid">
+          <div class="journey-card">
+            <div class="journey-card__icon">🎵</div>
+            <h3>Find Your Sound</h3>
+            <p>Explore genres and discover what resonates with your natural style and personality through our interactive genre assessment.</p>
+          </div>
+          <div class="journey-card">
+            <div class="journey-card__icon">📚</div>
+            <h3>Structured Learning</h3>
+            <p>Get a personalized curriculum designed for beginners — from basic theory to your first original song.</p>
+          </div>
+          <div class="journey-card">
+            <div class="journey-card__icon">🤝</div>
+            <h3>Beginner Community</h3>
+            <p>Connect with other beginners, share your first recordings, and grow together in a supportive environment.</p>
+          </div>
+          <div class="journey-card">
+            <div class="journey-card__icon">🎯</div>
+            <h3>90-Day Milestones</h3>
+            <p>Track real progress with achievable milestones. Celebrate your wins as you build your musical foundation.</p>
+          </div>
+        </div>
+      </div>
+      <div class="journey-panel" id="tab-intermediate">
+        <div class="journey-grid">
+          <div class="journey-card">
+            <div class="journey-card__icon">🎤</div>
+            <h3>Stage Readiness</h3>
+            <p>Move from rehearsal rooms to real stages. Get performance coaching, setlist strategy, and stage presence training.</p>
+          </div>
+          <div class="journey-card">
+            <div class="journey-card__icon">🎛️</div>
+            <h3>Recording Skills</h3>
+            <p>Learn home studio fundamentals, DAW workflows, and how to create professional-sounding demos.</p>
+          </div>
+          <div class="journey-card">
+            <div class="journey-card__icon">💡</div>
+            <h3>Industry Navigation</h3>
+            <p>Understand music distribution, streaming royalties, sync licensing, and how to get your music heard.</p>
+          </div>
+          <div class="journey-card">
+            <div class="journey-card__icon">🤲</div>
+            <h3>Co-Writing Sessions</h3>
+            <p>Connect with other intermediate musicians for collaborative songwriting and cross-genre experiments.</p>
+          </div>
+        </div>
+      </div>
+      <div class="journey-panel" id="tab-advanced">
+        <div class="journey-grid">
+          <div class="journey-card">
+            <div class="journey-card__icon">🏆</div>
+            <h3>Label & Deal Strategy</h3>
+            <p>Navigate label negotiations, understand contracts, and decide whether indie or major is right for you.</p>
+          </div>
+          <div class="journey-card">
+            <div class="journey-card__icon">🌍</div>
+            <h3>International Markets</h3>
+            <p>Expand beyond borders. Target diaspora audiences, international playlists, and global touring opportunities.</p>
+          </div>
+          <div class="journey-card">
+            <div class="journey-card__icon">💰</div>
+            <h3>Revenue Diversification</h3>
+            <p>Build income streams beyond music sales — sync, brand deals, merchandise, teaching, and content creation.</p>
+          </div>
+          <div class="journey-card">
+            <div class="journey-card__icon">📣</div>
+            <h3>Team Building</h3>
+            <p>Know when and how to hire a manager, booking agent, publicist, and entertainment lawyer.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ COACHES -->
+<section class="section section--dark" id="coaches">
+  <div class="container">
+    <div class="section__header">
+      <span class="section__tag section__tag--light">For Expert Coaches</span>
+      <h2 class="section__title section__title--light">World-Class Mentors<br/><em>Across Every Genre</em></h2>
+      <p class="section__sub section__sub--light">Handpicked coaches with real industry experience — not just theoretical knowledge.</p>
+    </div>
+    <div class="coaches-grid" id="coaches-grid">
+      <!-- Loaded by JS -->
+      <div class="loading-spinner">Loading coaches...</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ RECOMMENDATION -->
+<section class="section" id="recommend">
+  <div class="container">
+    <div class="section__header">
+      <span class="section__tag">Career Guidance Engine</span>
+      <h2 class="section__title">Get Your Personalized<br/><em>Music Career Roadmap</em></h2>
+      <p class="section__sub">Answer a few questions and receive tailored advice, a coach match, and your next action steps.</p>
+    </div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ ABOUT -->
+<section class="section section--tinted" id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-text">
+        <span class="section__tag">About OXYCORP</span>
+        <h2 class="section__title">Where Data Meets<br/><em>Musical Intuition</em></h2>
+        <p>OXYCORP was founded by musicians who grew frustrated with generic career advice that didn't account for the realities of the modern music industry — especially for artists outside the Western mainstream.</p>
+        <p>Our guidance engine combines real industry data, coach expertise, and genre-specific knowledge to give every musician actionable, personalized direction.</p>
+        <div class="about-values">
+          <div class="value">
+            <span class="value__icon">🎯</span>
+            <div>
+              <strong>Precision Guidance</strong>
+              <p>Not generic advice roadmaps built for your genre, level, and goals.</p>
+            </div>
+          </div>
+          <div class="value">
+            <span class="value__icon">🌍</span>
+            <div>
+              <strong>Global Perspective</strong>
+              <p>We understand Afrobeats, Latin, Gospel, and K-Pop as well as Classical and Jazz.</p>
+            </div>
+          </div>
+          <div class="value">
+            <span class="value__icon">🤝</span>
+            <div>
+              <strong>Real Relationships</strong>
+              <p>Our coaches are working professionals, not just certified instructors.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="about-visual">
+        <div class="about-card">
+          <div class="about-card__num">01</div>
+          <h4>Assess</h4>
+          <p>Tell us about your music, your level, and your aspirations.</p>
+        </div>
+        <div class="about-card">
+          <div class="about-card__num">02</div>
+          <h4>Receive</h4>
+          <p>Get a personalized roadmap with specific, actionable guidance.</p>
+        </div>
+        <div class="about-card">
+          <div class="about-card__num">03</div>
+          <h4>Connect</h4>
+          <p>Book a session with your matched coach and start growing.</p>
+        </div>
+        <div class="about-card">
+          <div class="about-card__num">04</div>
+          <h4>Grow</h4>
+          <p>Track milestones, revisit your roadmap, and keep evolving.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════ MODALS -->
+
+<!-- LOGIN MODAL -->
+<div class="modal-overlay" id="modal-login" onclick="closeModal('login')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal__close" onclick="closeModal('login')">✕</button>
+    <div class="modal__header">
+      <span class="modal__icon">♪</span>
+      <h2>Welcome Back</h2>
+      <p>Sign in to your OXYCORP account</p>
+    </div>
+    <div class="modal__body">
+      <div id="login-error" class="form-error hidden"></div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="login-email" placeholder="you@example.com"/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="Your password"/>
+      </div>
+      <button class="btn btn--accent btn--full" onclick="handleLogin()">Sign In →</button>
+      <p class="modal__switch">Don't have an account? <a href="#" onclick="switchModal('login','register')">Join free</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTER MODAL -->
+<div class="modal-overlay" id="modal-register" onclick="closeModal('register')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal__close" onclick="closeModal('register')">✕</button>
+    <div class="modal__header">
+      <span class="modal__icon">✦</span>
+      <h2>Join OXYCORP</h2>
+      <p>Start your music career journey today</p>
+    </div>
+    <div class="modal__body">
+      <div id="register-error" class="form-error hidden"></div>
+      <div id="register-success" class="form-success hidden"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="reg-name" placeholder="Your name"/>
+        </div>
+        <div class="form-group">
+          <label>I am a...</label>
+          <select id="reg-role">
+            <option value="musician">Musician</option>
+            <option value="coach">Coach</option>
+            <option value="student">Student</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="reg-email" placeholder="you@example.com"/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Primary Genre</label>
+          <select id="reg-genre">
+            <option value="">Select genre</option>
+            <option>Afrobeats</option><option>Hip-Hop</option>
+            <option>Classical</option><option>Jazz</option>
+            <option>Gospel</option><option>Pop</option>
+            <option>R&B</option><option>Latin</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Experience Level</label>
+          <select id="reg-exp">
+            <option value="">Select level</option>
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="reg-password" placeholder="Min 6 characters"/>
+      </div>
+      <button class="btn btn--accent btn--full" onclick="handleRegister()">Create My Account →</button>
+      <p class="modal__switch">Already a member? <a href="#" onclick="switchModal('register','login')">Sign in</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- BOOKING MODAL -->
+<div class="modal-overlay" id="modal-booking" onclick="closeModal('booking')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal__close" onclick="closeModal('booking')">✕</button>
+    <div class="modal__header">
+      <span class="modal__icon">📅</span>
+      <h2>Book a Session</h2>
+      <p id="booking-coach-name">with your coach</p>
+    </div>
+    <div class="modal__body">
+      <div id="booking-error" class="form-error hidden"></div>
+      <div id="booking-success" class="form-success hidden"></div>
+      <div class="form-group">
+        <label>Select Date</label>
+        <input type="date" id="booking-date"/>
+      </div>
+      <div class="form-group">
+        <label>Preferred Time</label>
+        <select id="booking-time">
+          <option value="09:00">9:00 AM</option>
+          <option value="11:00">11:00 AM</option>
+          <option value="13:00">1:00 PM</option>
+          <option value="15:00">3:00 PM</option>
+          <option value="17:00">5:00 PM</option>
+          <option value="19:00">7:00 PM</option>
+        </select>
+      </div>
+      <button class="btn btn--accent btn--full" onclick="submitBooking()">Confirm Booking →</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="main.js"></script>
+
+ <!-- CTA BANNER -->
+    <section class="section" style="padding-bottom:0">
+      <div class="container">
+        <div class="cta-banner fade-up">
+          <div class="sec-label" style="justify-content:center;">Get Started </div>
+          <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+            <a href="advisor.html" class="btn btn-primary btn-lg">♪ Start Free Consultation</a>
+            <a href="career-analysis.html" class="btn btn-teal btn-lg">View Career Analysis</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    // Animate wave bars
+    const waveSvg = document.querySelector('.wave-svg');
+    if (waveSvg) {
+      let bars = '';
+      const count = 80;
+      for (let i = 0; i < count; i++) {
+        const h = 20 + Math.random() * 80;
+        const delay = (i / count * 1.4).toFixed(2);
+        bars += `<rect class="wave-bar" x="${i * 10}" y="${120 - h}" width="6" height="${h}" style="animation-delay:${delay}s" />`;
+      }
+      waveSvg.innerHTML = bars;
+    }
+
+    // Intersection observer for fade-up animations
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.style.opacity = 1; });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

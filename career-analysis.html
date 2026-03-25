@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OXYCORP</title>
+  <link rel="stylesheet" href="global.css" />
+  <style>
+    .analysis-hero { padding: 7rem 0 4rem; }
+    .analysis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem; }
+
+    /* ── FORM PANEL ── */
+    .form-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 2.5rem; }
+    .form-section-title {
+      font-family: var(--font-m); font-size: 0.68rem; text-transform: uppercase;
+      letter-spacing: 0.15em; color: var(--gold); margin: 1.8rem 0 1rem; padding-top: 1.8rem;
+      border-top: 1px solid var(--border);
+    }
+    .form-section-title:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .range-wrap { display: flex; align-items: center; gap: 1rem; }
+    input[type="range"] {
+      flex: 1; padding: 0; background: transparent; border: none; box-shadow: none;
+      accent-color: var(--gold); height: auto;
+    }
+    .range-val {
+      font-family: var(--font-m); font-size: 0.8rem; color: var(--gold);
+      min-width: 2.5rem; text-align: right;
+    }
+    .submit-row { margin-top: 2rem; display: flex; gap: 1rem; }
+
+    /* ── RESULTS PANEL ── */
+    .results-panel {
+      display: flex; flex-direction: column; gap: 1.5rem;
+      opacity: 0; transition: opacity 0.5s; pointer-events: none;
+    }
+    .results-panel.visible { opacity: 1; pointer-events: all; }
+
+    /* Score card */
+    .score-card {
+      background: linear-gradient(135deg, var(--surface), rgba(200,168,75,0.05));
+      border: 1px solid var(--border); border-radius: var(--r); padding: 2.5rem;
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .score-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(200,168,75,0.1) 0%, transparent 60%);
+    }
+    .score-label { font-family: var(--font-m); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--muted); margin-bottom: 1.5rem; }
+    .score-big {
+      font-family: var(--font-d); font-size: 6rem; font-weight: 700; color: var(--gold);
+      line-height: 1; margin: 0.5rem 0;
+    }
+    .score-grade { font-family: var(--font-m); font-size: 0.78rem; letter-spacing: 0.12em; color: var(--teal); margin-bottom: 1.5rem; }
+    .score-bar { height: 8px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+    .score-bar-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--teal)); border-radius: 99px; width: 0; transition: width 1.2s ease; }
+
+    /* Metrics grid */
+    .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 1.4rem; }
+    .metric-name { font-family: var(--font-m); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 0.5rem; }
+    .metric-val { font-family: var(--font-d); font-size: 2rem; font-weight: 700; color: var(--text); }
+    .metric-trend { font-family: var(--font-m); font-size: 0.68rem; margin-top: 0.3rem; }
+    .trend-up { color: var(--teal); }
+    .trend-down { color: var(--rose); }
+
+    /* Insights */
+    .insight-list { display: flex; flex-direction: column; gap: 0.8rem; }
+    .insight-item {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 1.1rem 1.3rem;
+      display: flex; gap: 1rem; align-items: flex-start;
+      border-left: 3px solid transparent; transition: border-left-color 0.2s;
+    }
+    .insight-item.strength { border-left-color: var(--teal); }
+    .insight-item.warning { border-left-color: var(--gold); }
+    .insight-item.opportunity { border-left-color: var(--violet); }
+    .insight-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .insight-text { font-size: 0.88rem; color: var(--muted); line-height: 1.65; }
+    .insight-text strong { color: var(--text); display: block; margin-bottom: 0.2rem; }
+
+    /* Loading overlay */
+    .loading-overlay {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(6,6,10,0.9); backdrop-filter: blur(8px);
+      display: none; flex-direction: column; align-items: center; justify-content: center; gap: 1.5rem;
+    }
+    .loading-overlay.show { display: flex; }
+    .loading-logo { font-family: var(--font-d); font-size: 2.5rem; font-weight: 700; color: var(--gold); }
+    .loading-steps { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; max-width: 320px; }
+    .loading-step {
+      font-family: var(--font-m); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--muted); display: flex; align-items: center; gap: 0.8rem;
+      transition: color 0.3s;
+    }
+    .loading-step.done { color: var(--teal); }
+    .loading-step.active { color: var(--gold); }
+    .step-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+    @media (max-width: 900px) {
+      .analysis-grid, .form-row, .metrics-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-logo">OXY<span style="color:var(--teal)">CORP</span></div>
+    <p style="color:var(--muted);font-family:var(--font-m);font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;">AI Analysis in Progress</p>
+    <ul class="loading-steps">
+      <li class="loading-step" id="step1"><div class="step-dot"></div>Preprocessing career data</li>
+      <li class="loading-step" id="step2"><div class="step-dot"></div>Running ML scoring models</li>
+      <li class="loading-step" id="step3"><div class="step-dot"></div>Benchmarking against dataset</li>
+      <li class="loading-step" id="step4"><div class="step-dot"></div>Generating LLM insights</li>
+      <li class="loading-step" id="step5"><div class="step-dot"></div>Building career report</li>
+    </ul>
+  </div>
+
+  <div class="page-wrap">
+    <section class="analysis-hero">
+      <div class="container">
+        <div class="sec-label">ML-Powered</div>
+        <h1>Career <em>Analysis</em></h1>
+        <p style="color:var(--muted);max-width:540px;margin-top:1rem;">
+          Our machine learning models analyse your career metrics and benchmark you against 50,000+ music professionals to produce a personalised career score and action plan.
+        </p>
+      </div>
+    </section>
+
+    <div class="container" style="padding-bottom:6rem;">
+      <div class="analysis-grid">
+        <!-- INPUT FORM -->
+        <div class="form-panel">
+          <p class="form-section-title" style="border:none;margin-top:0;padding-top:0;">Artist Profile</p>
+          <div class="input-wrap">
+            <label>Artist / Band Name</label>
+            <input type="text" id="artistName" placeholder="e.g. Nova Echo" />
+          </div>
+          <div class="form-row">
+            <div class="input-wrap">
+              <label>Primary Genre</label>
+              <select id="genre">
+                <option>Afrobeats</option>
+                <option>Hip-Hop / Rap</option>
+                <option>R&B / Soul</option>
+                <option>Pop</option>
+                <option>Electronic / EDM</option>
+                <option>Indie / Alternative</option>
+                <option>Jazz</option>
+                <option>Classical</option>
+                <option>Reggae</option>
+                <option>Gospel / CCM</option>
+                <option>Country</option>
+                <option>Rock</option>
+                <option>Metal</option>
+                <option>Folk / Acoustic</option>
+                <option>Latin</option>
+                <option>Amapiano</option>
+              </select>
+            </div>
+            <div class="input-wrap">
+              <label>Career Stage</label>
+              <select id="careerStage">
+                <option>Emerging (0–2 yrs)</option>
+                <option>Developing (2–5 yrs)</option>
+                <option>Mid-Career (5–10 yrs)</option>
+                <option>Established (10+ yrs)</option>
+              </select>
+            </div>
+          </div>
+
+          <p class="form-section-title">Streaming Metrics</p>
+          <div class="input-wrap">
+            <label>Monthly Spotify Listeners</label>
+            <div class="range-wrap">
+              <input type="range" id="spotifyListeners" min="0" max="1000000" step="1000" value="5000" oninput="updateRange(this,'spotifyVal',v=>v>=1000?Math.round(v/1000)+'K':v)" />
+              <span class="range-val" id="spotifyVal">5K</span>
+            </div>
+          </div>
+          <div class="input-wrap">
+            <label>Total Monthly Streams (All Platforms)</label>
+            <div class="range-wrap">
+              <input type="range" id="totalStreams" min="0" max="5000000" step="5000" value="15000" oninput="updateRange(this,'totalStreamsVal',v=>v>=1000?Math.round(v/1000)+'K':v)" />
+              <span class="range-val" id="totalStreamsVal">15K</span>
+            </div>
+          </div>
+          <div class="input-wrap">
+            <label>YouTube Monthly Views</label>
+            <div class="range-wrap">
+              <input type="range" id="ytViews" min="0" max="2000000" step="1000" value="8000" oninput="updateRange(this,'ytVal',v=>v>=1000?Math.round(v/1000)+'K':v)" />
+              <span class="range-val" id="ytVal">8K</span>
+            </div>
+          </div>
+
+          <p class="form-section-title">Social Media</p>
+          <div class="form-row">
+            <div class="input-wrap">
+              <label>Instagram Followers</label>
+              <input type="number" id="igFollowers" placeholder="e.g. 4500" value="4500" />
+            </div>
+            <div class="input-wrap">
+              <label>TikTok Followers</label>
+              <input type="number" id="ttFollowers" placeholder="e.g. 12000" value="12000" />
+            </div>
+          </div>
+          <div class="input-wrap">
+            <label>Average Engagement Rate (%)</label>
+            <div class="range-wrap">
+              <input type="range" id="engagementRate" min="0" max="15" step="0.1" value="3.2" oninput="updateRange(this,'engVal',v=>v+'%')" />
+              <span class="range-val" id="engVal">3.2%</span>
+            </div>
+          </div>
+
+          <p class="form-section-title">Live & Revenue</p>
+          <div class="form-row">
+            <div class="input-wrap">
+              <label>Shows per Year</label>
+              <input type="number" id="gigsPerYear" placeholder="e.g. 12" value="12" />
+            </div>
+            <div class="input-wrap">
+              <label>Avg. Show Revenue (USD)</label>
+              <input type="number" id="showRevenue" placeholder="e.g. 500" value="500" />
+            </div>
+          </div>
+          <div class="input-wrap">
+            <label>Annual Music Revenue (USD)</label>
+            <input type="number" id="annualRevenue" placeholder="e.g. 8000" value="8000" />
+          </div>
+
+          <p class="form-section-title">Goals & Focus</p>
+          <div class="input-wrap">
+            <label>Primary Career Goal</label>
+            <select id="primaryGoal">
+              <option>Build fanbase & streaming numbers</option>
+              <option>Land a record deal</option>
+              <option>Increase live performance revenue</option>
+              <option>Get sync licensing placements</option>
+              <option>Build a sustainable independent career</option>
+              <option>Break into international markets</option>
+              <option>Transition to music production / songwriting</option>
+            </select>
+          </div>
+
+          <div class="submit-row">
+            <button class="btn btn-primary btn-lg" onclick="runAnalysis()" style="flex:1;">
+              ⚡ Run Analysis
+            </button>
+          </div>
+        </div>
+
+        <!-- RESULTS -->
+        <div class="results-panel" id="resultsPanel">
+          <!-- Career Score -->
+          <div class="score-card">
+            <div class="score-label">CAREER SCORE</div>
+            <div class="score-big" id="scoreDisplay">—</div>
+            <div class="score-grade" id="scoreGrade">AWAITING ANALYSIS</div>
+            <div class="score-bar"><div class="score-bar-fill" id="scoreBarFill"></div></div>
+            <p style="color:var(--muted);font-size:0.82rem;margin-top:1.2rem;" id="scoreSubtext">Enter your data and run the analysis to generate your personalised career score.</p>
+          </div>
+
+          <!-- Key Metrics -->
+          <div>
+            <div class="sec-label">Key Metrics</div>
+            <div class="metrics-grid" id="metricsGrid">
+              <div class="metric-card"><div class="metric-name">Reach Score</div><div class="metric-val" id="m1">—</div><div class="metric-trend">—</div></div>
+              <div class="metric-card"><div class="metric-name">Engagement Score</div><div class="metric-val" id="m2">—</div><div class="metric-trend">—</div></div>
+              <div class="metric-card"><div class="metric-name">Revenue Score</div><div class="metric-val" id="m3">—</div><div class="metric-trend">—</div></div>
+              <div class="metric-card"><div class="metric-name">Growth Trajectory</div><div class="metric-val" id="m4">—</div><div class="metric-trend">—</div></div>
+            </div>
+          </div>
+
+          <!-- AI Insights -->
+          <div>
+            <div class="sec-label">AI-Generated Insights</div>
+            <div class="insight-list" id="insightList">
+              <div class="insight-item"><div class="insight-icon">⏳</div><div class="insight-text">Run your analysis to see personalised AI insights.</div></div>
+            </div>
+          </div>
+
+          <!-- CTA -->
+          <div style="display:flex;gap:1rem;">
+            <a href="roadmap.html" class="btn btn-primary" style="flex:1;justify-content:center;">View My Roadmap →</a>
+            <a href="advisor.html" class="btn btn-teal" style="flex:1;justify-content:center;">Ask AI Advisor</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared1.0.js"></script>
+  <script>
+    function updateRange(el, valId, formatter) {
+      document.getElementById(valId).textContent = formatter(parseFloat(el.value));
+    }
+
+    async function runAnalysis() {
+      const overlay = document.getElementById('loadingOverlay');
+      overlay.classList.add('show');
+
+      // Animate loading steps
+      const steps = ['step1','step2','step3','step4','step5'];
+      for (let i = 0; i < steps.length; i++) {
+        if (i > 0) document.getElementById(steps[i-1]).classList.replace('active','done');
+        document.getElementById(steps[i]).classList.add('active');
+        await delay(700 + Math.random() * 400);
+      }
+      document.getElementById(steps[steps.length-1]).classList.replace('active','done');
+      await delay(500);
+      overlay.classList.remove('show');
+
+      // Reset steps for next run
+      steps.forEach(s => { const el = document.getElementById(s); el.classList.remove('done','active'); });
+
+      computeAndDisplay();
+    }
+
+    function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+    function computeAndDisplay() {
+      // ML-inspired scoring logic (client-side simulation of Python ML model)
+      const spotify     = parseInt(document.getElementById('spotifyListeners').value) || 0;
+      const streams     = parseInt(document.getElementById('totalStreams').value) || 0;
+      const yt          = parseInt(document.getElementById('ytViews').value) || 0;
+      const ig          = parseInt(document.getElementById('igFollowers').value) || 0;
+      const tt          = parseInt(document.getElementById('ttFollowers').value) || 0;
+      const eng         = parseFloat(document.getElementById('engagementRate').value) || 0;
+      const gigs        = parseInt(document.getElementById('gigsPerYear').value) || 0;
+      const showRev     = parseInt(document.getElementById('showRevenue').value) || 0;
+      const annualRev   = parseInt(document.getElementById('annualRevenue').value) || 0;
+      const genre       = document.getElementById('genre').value;
+      const stage       = document.getElementById('careerStage').value;
+
+      // Normalise each feature (0-100)
+      const reachScore  = Math.min(100, (spotify/10000)*30 + (streams/50000)*20 + (yt/20000)*20 + (ig/10000)*15 + (tt/20000)*15);
+      const engScore    = Math.min(100, eng * 10 + (tt > 1000 ? 20 : 0) + (ig > 1000 ? 15 : 0));
+      const revScore    = Math.min(100, (annualRev/20000)*50 + (gigs/50)*30 + (showRev/2000)*20);
+      const stageBonus  = stage.includes('0–2') ? 10 : stage.includes('2–5') ? 5 : 0; // emerging gets bonus for context
+
+      // Weighted final score (simulates random forest feature importance)
+      const finalScore  = Math.round(reachScore * 0.35 + engScore * 0.30 + revScore * 0.25 + stageBonus * 0.10);
+      const clampedScore = Math.max(8, Math.min(98, finalScore));
+
+      // Growth trajectory (simulated)
+      const growthPct   = ((eng / 5) * 15 + (tt > 5000 ? 12 : 3) + (gigs > 10 ? 8 : 2)).toFixed(0);
+
+      let grade, colour;
+      if (clampedScore >= 80)      { grade = 'EXCEPTIONAL · STAR TRAJECTORY'; colour = 'var(--teal)'; }
+      else if (clampedScore >= 65) { grade = 'STRONG · CONSISTENT GROWTH'; colour = 'var(--gold)'; }
+      else if (clampedScore >= 48) { grade = 'DEVELOPING · GOOD FOUNDATIONS'; colour = 'var(--gold)'; }
+      else if (clampedScore >= 32) { grade = 'EARLY STAGE · FOCUS REQUIRED'; colour = 'var(--violet)'; }
+      else                         { grade = 'BUILDING BLOCKS · KEEP GOING'; colour = 'var(--rose)'; }
+
+      // Update DOM
+      document.getElementById('scoreDisplay').textContent = clampedScore;
+      document.getElementById('scoreDisplay').style.color = colour;
+      document.getElementById('scoreGrade').textContent = grade;
+      document.getElementById('scoreGrade').style.color = colour;
+      document.getElementById('scoreBarFill').style.width = clampedScore + '%';
+      document.getElementById('scoreSubtext').textContent =
+        `Your career score is ${clampedScore}/100. Based on ML analysis of ${genre} artists at your stage.`;
+
+      // Metrics
+      setMetric('m1', Math.round(reachScore), reachScore > 50 ? 'trend-up' : 'trend-down', reachScore > 50 ? '↑ Above average' : '↓ Needs growth');
+      setMetric('m2', Math.round(engScore), engScore > 40 ? 'trend-up' : 'trend-down', engScore > 40 ? '↑ Strong engagement' : '↓ Improve engagement');
+      setMetric('m3', Math.round(revScore), revScore > 40 ? 'trend-up' : 'trend-down', revScore > 40 ? '↑ Revenue healthy' : '↓ Diversify revenue');
+      setMetric('m4', '+' + growthPct + '%', 'trend-up', '↑ Projected 12-month growth');
+
+      // Insights
+      const insights = generateInsights(clampedScore, reachScore, engScore, revScore, eng, gigs, annualRev, genre);
+      const insightList = document.getElementById('insightList');
+      insightList.innerHTML = insights.map(i => `
+        <div class="insight-item ${i.type}">
+          <div class="insight-icon">${i.icon}</div>
+          <div class="insight-text"><strong>${i.title}</strong>${i.body}</div>
+        </div>
+      `).join('');
+
+      // Show panel
+      document.getElementById('resultsPanel').classList.add('visible');
+      document.getElementById('resultsPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function setMetric(id, val, cls, trend) {
+      document.getElementById(id).textContent = val;
+      document.getElementById(id).nextElementSibling.textContent = trend;
+      document.getElementById(id).nextElementSibling.className = 'metric-trend ' + cls;
+    }
+
+    function generateInsights(score, reach, eng, rev, engRate, gigs, revenue, genre) {
+      const insights = [];
+
+      if (reach > 60)
+        insights.push({ type:'strength', icon:'🌍', title:'Strong Audience Reach', body:`Your streaming and social reach is above average for ${genre} artists at your stage. The ML model identifies this as your primary career asset. Keep up consistent release cadence.` });
+      else
+        insights.push({ type:'warning', icon:'📢', title:'Grow Your Reach', body:`Your audience reach score is below the ${genre} benchmark. Priority action: launch a TikTok content strategy targeting 5 posts/week, and submit to Spotify editorial playlists.` });
+
+      if (engRate > 4)
+        insights.push({ type:'strength', icon:'💬', title:'High Engagement Rate', body:`An engagement rate above 4% is exceptional. Our ML model ranks you in the top 20% of your peer group. This is a key signal for brand partnership and sync opportunities.` });
+      else
+        insights.push({ type:'opportunity', icon:'📲', title:'Engagement Opportunity', body:`Your engagement rate has room to improve. Try posting behind-the-scenes content, interactive polls, and reply to every comment for 30 days. Aim for 4%+.` });
+
+      if (gigs < 10)
+        insights.push({ type:'warning', icon:'🎤', title:'Increase Live Presence', body:`Artists performing 24+ shows/year earn 3× more revenue on average. Use platforms like Songkick, GigSalad, and local venue cold outreach to book more shows.` });
+      else
+        insights.push({ type:'strength', icon:'🎤', title:'Active Live Performer', body:`Your live performance frequency is strong. The model suggests packaging your live show with merchandise bundles to increase per-show revenue by 35–60%.` });
+
+      if (revenue < 5000)
+        insights.push({ type:'opportunity', icon:'💰', title:'Diversify Revenue Streams', body:`Your annual revenue suggests heavy reliance on a single income stream. ML analysis recommends adding: sync pitching, Patreon/fan memberships, and teaching/sessions within 90 days.` });
+
+      insights.push({ type:'opportunity', icon:'🤖', title:'LLM Recommendation', body:`Based on your profile, the AI model recommends focusing on ${score < 50 ? 'building core audience before monetising' : 'monetisation and professional partnerships'}. Book a session with the AI Advisor for a detailed 90-day action plan.` });
+
+      return insights.slice(0, 4);
+    }
+
+    // Intersection observer animations
+    const observer = new IntersectionObserver(e => e.forEach(el => { if (el.isIntersecting) el.target.style.opacity = 1; }), { threshold: 0.1 });
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>

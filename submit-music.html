@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OXYCORP</title>
+  <link rel="stylesheet" href="global.css" />
+  <style>
+    /* ── PAGE HERO ── */
+    .submit-hero { padding: 7rem 0 3.5rem; }
+
+    /* ── MULTI-STEP PROGRESS ── */
+    .step-progress {
+      display: flex; align-items: center; gap: 0;
+      margin-bottom: 3.5rem; max-width: 680px;
+    }
+    .step-item {
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+      flex: 1; position: relative; cursor: pointer;
+    }
+    .step-item:not(:last-child)::after {
+      content: ''; position: absolute; top: 18px; left: 60%; right: -40%;
+      height: 2px; background: var(--border); z-index: 0; transition: background 0.4s;
+    }
+    .step-item.done:not(:last-child)::after,
+    .step-item.active:not(:last-child)::after { background: var(--gold); }
+    .step-circle {
+      width: 36px; height: 36px; border-radius: 50%;
+      border: 2px solid var(--border); background: var(--surface);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-m); font-size: 0.72rem; font-weight: 700;
+      color: var(--muted); transition: all 0.3s; position: relative; z-index: 1;
+    }
+    .step-item.active .step-circle {
+      border-color: var(--gold); background: var(--gold-dim); color: var(--gold);
+      box-shadow: 0 0 0 4px rgba(200,168,75,0.12);
+    }
+    .step-item.done .step-circle {
+      border-color: var(--teal); background: var(--teal-dim); color: var(--teal);
+    }
+    .step-label {
+      font-family: var(--font-m); font-size: 0.58rem; text-transform: uppercase;
+      letter-spacing: 0.12em; color: var(--muted); white-space: nowrap; transition: color 0.3s;
+    }
+    .step-item.active .step-label { color: var(--gold); }
+    .step-item.done .step-label   { color: var(--teal); }
+
+    /* ── MAIN LAYOUT ── */
+    .submit-layout { display: grid; grid-template-columns: 1fr 340px; gap: 2.5rem; align-items: start; padding-bottom: 6rem; }
+
+    /* ── FORM CARD ── */
+    .form-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); overflow: hidden;
+    }
+    .form-card-header {
+      background: linear-gradient(135deg, rgba(200,168,75,0.08), rgba(29,228,180,0.04));
+      border-bottom: 1px solid var(--border);
+      padding: 1.8rem 2.2rem; display: flex; align-items: center; justify-content: space-between;
+    }
+    .form-card-header h2 { font-family: var(--font-d); font-size: 1.6rem; font-weight: 600; }
+    .form-card-body { padding: 2.2rem; }
+
+    /* ── STEP PANELS ── */
+    .step-panel { display: none; animation: fadeUp 0.4s ease; }
+    .step-panel.active { display: block; }
+
+    .field-group { margin-bottom: 1.6rem; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+    .field-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+    /* ── UPLOAD ZONE ── */
+    .upload-zone {
+      border: 2px dashed var(--border); border-radius: var(--r);
+      padding: 3rem 2rem; text-align: center; cursor: pointer;
+      transition: all 0.3s; position: relative; overflow: hidden;
+      background: var(--surface2);
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--gold); background: var(--gold-dim);
+    }
+    .upload-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer;
+      width: 100%; height: 100%; border: none; background: transparent;
+      box-shadow: none; padding: 0;
+    }
+    .upload-icon { font-size: 2.5rem; margin-bottom: 0.8rem; display: block; }
+    .upload-title { font-family: var(--font-d); font-size: 1.2rem; font-weight: 600; margin-bottom: 0.3rem; }
+    .upload-sub { color: var(--muted); font-size: 0.82rem; margin-bottom: 0.6rem; }
+    .upload-formats { font-family: var(--font-m); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+    .upload-preview {
+      display: none; margin-top: 1rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 0.9rem 1.2rem;
+      display: none; align-items: center; gap: 0.9rem;
+    }
+    .upload-preview.show { display: flex; }
+    .preview-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .preview-name { font-size: 0.88rem; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .preview-size { font-family: var(--font-m); font-size: 0.65rem; color: var(--muted); flex-shrink: 0; }
+    .preview-remove {
+      width: 24px; height: 24px; border: 1px solid var(--border); border-radius: 3px;
+      background: transparent; color: var(--muted); cursor: pointer; font-size: 0.8rem;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s;
+    }
+    .preview-remove:hover { background: rgba(255,78,126,0.15); border-color: var(--rose); color: var(--rose); }
+
+    /* Cover art upload */
+    .cover-upload {
+      border: 2px dashed var(--border); border-radius: var(--r);
+      width: 100%; aspect-ratio: 1; cursor: pointer;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 0.6rem; background: var(--surface2); transition: all 0.3s; position: relative; overflow: hidden;
+    }
+    .cover-upload:hover { border-color: var(--gold); background: var(--gold-dim); }
+    .cover-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; border: none; background: transparent; box-shadow: none; padding: 0; }
+    .cover-preview-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; }
+    .cover-preview-img.show { display: block; }
+    .cover-overlay {
+      position: absolute; inset: 0; background: rgba(6,6,10,0.7);
+      display: none; align-items: center; justify-content: center; flex-direction: column;
+      gap: 0.5rem; font-family: var(--font-m); font-size: 0.65rem; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--text);
+    }
+    .cover-upload:hover .cover-overlay { display: flex; }
+
+    /* ── GENRE CHIPS ── */
+    .genre-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .genre-chip {
+      font-family: var(--font-m); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em;
+      padding: 0.4rem 0.9rem; border: 1px solid var(--border); border-radius: 2px;
+      background: transparent; color: var(--muted); cursor: pointer; transition: all 0.2s;
+    }
+    .genre-chip:hover  { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+    .genre-chip.active { border-color: var(--gold); color: var(--gold); background: var(--gold-dim); }
+
+    /* ── MOOD GRID ── */
+    .mood-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; }
+    .mood-btn {
+      padding: 0.7rem 0.5rem; border: 1px solid var(--border); border-radius: var(--r);
+      background: var(--surface2); color: var(--muted); font-size: 0.82rem;
+      cursor: pointer; transition: all 0.2s; text-align: center; display: flex;
+      flex-direction: column; align-items: center; gap: 0.3rem;
+    }
+    .mood-btn span { font-size: 1.2rem; }
+    .mood-btn small { font-family: var(--font-m); font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.1em; }
+    .mood-btn:hover  { border-color: var(--teal); color: var(--teal); background: var(--teal-dim); }
+    .mood-btn.active { border-color: var(--teal); color: var(--teal); background: var(--teal-dim); }
+
+    /* ── BPM SLIDER ── */
+    .bpm-display {
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-d); font-size: 3.5rem; font-weight: 700; color: var(--gold);
+      margin: 0.5rem 0; line-height: 1;
+    }
+    .bpm-unit { font-family: var(--font-m); font-size: 0.75rem; color: var(--muted); margin-left: 0.5rem; align-self: flex-end; padding-bottom: 0.6rem; }
+
+    /* ── LINKS ROW ── */
+    .link-row { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.8rem; }
+    .link-platform {
+      width: 38px; height: 38px; border-radius: var(--r); flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; border: 1px solid var(--border); background: var(--surface2);
+    }
+    .link-row input { flex: 1; margin: 0; }
+    .link-remove-btn {
+      width: 34px; height: 34px; border: 1px solid var(--border); border-radius: var(--r);
+      background: transparent; color: var(--muted); cursor: pointer; font-size: 0.75rem;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s;
+    }
+    .link-remove-btn:hover { border-color: var(--rose); color: var(--rose); }
+    .add-link-btn {
+      font-family: var(--font-m); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em;
+      background: transparent; border: 1px dashed var(--border); color: var(--muted);
+      padding: 0.55rem 1rem; border-radius: var(--r); cursor: pointer; width: 100%;
+      transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .add-link-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* ── REVIEW PANEL ── */
+    .review-grid { display: grid; grid-template-columns: 140px 1fr; gap: 2rem; align-items: start; margin-bottom: 2rem; }
+    .review-cover {
+      width: 140px; height: 140px; border-radius: var(--r);
+      background: var(--surface2); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center; font-size: 2.5rem; overflow: hidden;
+    }
+    .review-cover img { width: 100%; height: 100%; object-fit: cover; display: none; }
+    .review-table { display: flex; flex-direction: column; gap: 0.7rem; }
+    .review-row { display: flex; gap: 1rem; align-items: baseline; }
+    .review-key { font-family: var(--font-m); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); min-width: 120px; flex-shrink: 0; }
+    .review-val { font-size: 0.9rem; color: var(--text); }
+    .review-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+    /* ── TERMS CHECKBOX ── */
+    .terms-check {
+      display: flex; align-items: flex-start; gap: 0.9rem;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 1.1rem 1.3rem; margin-bottom: 1.2rem;
+      cursor: pointer; transition: border-color 0.2s;
+    }
+    .terms-check:hover { border-color: rgba(200,168,75,0.4); }
+    .terms-check input[type="checkbox"] {
+      width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px;
+      accent-color: var(--gold); cursor: pointer;
+      background: transparent; border: 1px solid var(--border); padding: 0; box-shadow: none;
+    }
+    .terms-check p { font-size: 0.85rem; color: var(--muted); line-height: 1.65; margin: 0; }
+    .terms-check a { color: var(--gold); text-decoration: none; }
+    .terms-check a:hover { text-decoration: underline; }
+
+    /* ── FORM NAV BUTTONS ── */
+    .form-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 2.2rem; padding-top: 1.8rem; border-top: 1px solid var(--border); }
+
+    /* ── SUCCESS STATE ── */
+    .success-panel {
+      display: none; text-align: center; padding: 4rem 2rem;
+      animation: fadeUp 0.5s ease;
+    }
+    .success-panel.show { display: block; }
+    .success-icon {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: var(--teal-dim); border: 2px solid var(--border2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.2rem; margin: 0 auto 1.5rem;
+      animation: pulse-ring 2s infinite;
+    }
+    .success-title { font-family: var(--font-d); font-size: 2.5rem; font-weight: 700; margin-bottom: 0.8rem; }
+    .success-sub { color: var(--muted); max-width: 420px; margin: 0 auto 2rem; line-height: 1.8; }
+    .track-id-badge {
+      font-family: var(--font-m); font-size: 0.8rem; letter-spacing: 0.15em;
+      background: var(--surface2); border: 1px solid var(--border);
+      padding: 0.7rem 1.5rem; border-radius: var(--r); display: inline-block; margin-bottom: 2rem; color: var(--gold);
+    }
+
+    /* ── SIDEBAR CARDS ── */
+    .sidebar-stack { display: flex; flex-direction: column; gap: 1.5rem; position: sticky; top: 90px; }
+    .info-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 1.5rem; }
+    .info-card h4 { font-family: var(--font-m); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold); margin-bottom: 1rem; }
+    .info-list { list-style: none; display: flex; flex-direction: column; gap: 0.7rem; }
+    .info-list li { display: flex; gap: 0.7rem; font-size: 0.85rem; color: var(--muted); line-height: 1.6; }
+    .info-list li::before { content: '✓'; color: var(--teal); font-family: var(--font-m); font-size: 0.7rem; flex-shrink: 0; margin-top: 0.15rem; }
+    .db-stats { display: flex; flex-direction: column; gap: 0.8rem; }
+    .db-stat-row { display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 0; border-bottom: 1px solid var(--border); }
+    .db-stat-row:last-child { border-bottom: none; }
+    .db-stat-label { font-family: var(--font-m); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+    .db-stat-val { font-family: var(--font-d); font-size: 1.3rem; font-weight: 700; color: var(--gold); }
+
+    /* ── TRACK LIBRARY PREVIEW ── */
+    .library-preview { margin-top: 5rem; }
+    .track-row {
+      display: flex; align-items: center; gap: 1.2rem;
+      padding: 0.9rem 1.2rem; border-bottom: 1px solid var(--border);
+      transition: background 0.2s; cursor: pointer;
+    }
+    .track-row:first-child { border-top: 1px solid var(--border); }
+    .track-row:hover { background: var(--surface2); }
+    .track-num { font-family: var(--font-m); font-size: 0.65rem; color: var(--muted); min-width: 20px; text-align: center; }
+    .track-art {
+      width: 42px; height: 42px; border-radius: 3px; flex-shrink: 0;
+      background: linear-gradient(135deg, var(--gold-dim), var(--teal-dim));
+      display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+      border: 1px solid var(--border);
+    }
+    .track-info { flex: 1; min-width: 0; }
+    .track-title { font-size: 0.9rem; font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .track-artist { font-family: var(--font-m); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-top: 0.15rem; }
+    .track-genre { font-family: var(--font-m); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); background: var(--gold-dim); padding: 0.2rem 0.6rem; border-radius: 2px; }
+    .track-bpm { font-family: var(--font-m); font-size: 0.65rem; color: var(--muted); min-width: 55px; text-align: right; }
+    .track-dur { font-family: var(--font-m); font-size: 0.65rem; color: var(--muted); min-width: 40px; text-align: right; }
+    .play-btn {
+      width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border);
+      background: transparent; color: var(--text); font-size: 0.7rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s;
+    }
+    .play-btn:hover { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); }
+    .play-btn.playing { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); animation: pulse-ring 2s infinite; }
+
+    /* ── SEARCH BAR ── */
+    .library-controls {
+      display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: center; flex-wrap: wrap;
+    }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; }
+    .search-wrap input { padding-left: 2.4rem; }
+    .search-icon { position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.9rem; pointer-events: none; }
+    .sort-select { width: auto; min-width: 140px; }
+
+    @media (max-width: 960px) {
+      .submit-layout { grid-template-columns: 1fr; }
+      .sidebar-stack { position: static; }
+      .field-row, .field-row-3 { grid-template-columns: 1fr; }
+      .mood-grid { grid-template-columns: repeat(3, 1fr); }
+      .review-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 600px) {
+      .step-label { display: none; }
+      .mood-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+
+    <!-- HERO -->
+    <section class="submit-hero">
+      <div class="container">
+        <div class="sec-label">Music Database</div>
+        <h1>Add Your <em>Music</em></h1>
+        <p style="color:var(--muted);max-width:540px;margin-top:1rem;">
+          Submit your tracks to the SOUNDPATH database. Our AI will analyse your music, tag it intelligently, and make it discoverable to sync supervisors, playlist curators, and industry partners.
+        </p>
+      </div>
+    </section>
+
+    <!-- SUBMIT FORM + SIDEBAR -->
+    <div class="container">
+      <!-- STEP PROGRESS -->
+      <div class="step-progress" id="stepProgress">
+        <div class="step-item active" onclick="goToStep(1)">
+          <div class="step-circle" id="sc1">1</div>
+          <span class="step-label">Track Info</span>
+        </div>
+        <div class="step-item" onclick="goToStep(2)">
+          <div class="step-circle" id="sc2">2</div>
+          <span class="step-label">Audio & Art</span>
+        </div>
+        <div class="step-item" onclick="goToStep(3)">
+          <div class="step-circle" id="sc3">3</div>
+          <span class="step-label">Metadata</span>
+        </div>
+        <div class="step-item" onclick="goToStep(4)">
+          <div class="step-circle" id="sc4">4</div>
+          <span class="step-label">Links</span>
+        </div>
+        <div class="step-item" onclick="goToStep(5)">
+          <div class="step-circle" id="sc5">5</div>
+          <span class="step-label">Review</span>
+        </div>
+      </div>
+
+      <div class="submit-layout">
+        <!-- FORM CARD -->
+        <div class="form-card">
+          <div class="form-card-header">
+            <h2 id="stepTitle">Track Information</h2>
+            <span class="tag tag-gold" id="stepTag">Step 1 of 5</span>
+          </div>
+
+          <div class="form-card-body">
+
+            <!-- ── STEP 1: TRACK INFO ── -->
+            <div class="step-panel active" id="panel1">
+              <div class="field-group">
+                <div class="input-wrap">
+                  <label>Track Title *</label>
+                  <input type="text" id="trackTitle" placeholder="e.g. Golden Hour (feat. Amara)" />
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="input-wrap">
+                  <label>Artist Name *</label>
+                  <input type="text" id="artistName" placeholder="e.g. Nova Echo" />
+                </div>
+                <div class="input-wrap">
+                  <label>Featured Artist(s)</label>
+                  <input type="text" id="featuredArtist" placeholder="e.g. Amara (optional)" />
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="input-wrap">
+                  <label>Album / EP Name</label>
+                  <input type="text" id="albumName" placeholder="e.g. Midnight Frequency (optional)" />
+                </div>
+                <div class="input-wrap">
+                  <label>Release Year *</label>
+                  <input type="number" id="releaseYear" placeholder="e.g. 2025" min="1950" max="2030" value="2025" />
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="input-wrap">
+                  <label>Record Label</label>
+                  <input type="text" id="recordLabel" placeholder="e.g. Independent / Label Name" />
+                </div>
+                <div class="input-wrap">
+                  <label>ISRC Code</label>
+                  <input type="text" id="isrcCode" placeholder="e.g. USRC17607839" maxlength="12" />
+                </div>
+              </div>
+              <div class="input-wrap">
+                <label>Track Description</label>
+                <textarea id="trackDesc" rows="3" placeholder="Describe your track — vibe, story, inspiration... (optional)"></textarea>
+              </div>
+              <div class="input-wrap">
+                <label>Songwriter(s) / Composer(s)</label>
+                <input type="text" id="songwriters" placeholder="e.g. John Doe, Jane Smith" />
+              </div>
+              <div class="form-nav">
+                <span></span>
+                <button class="btn btn-primary" onclick="nextStep()">Continue → Audio & Art</button>
+              </div>
+            </div>
+
+            <!-- ── STEP 2: AUDIO & ART ── -->
+            <div class="step-panel" id="panel2">
+              <div class="field-group">
+                <label style="display:block;margin-bottom:0.8rem;">Audio File * <span style="color:var(--muted);font-family:var(--font-b);text-transform:none;letter-spacing:0;font-weight:300;">(MP3, WAV, FLAC — max 100MB)</span></label>
+                <div class="upload-zone" id="audioZone">
+                  <input type="file" id="audioFile" accept=".mp3,.wav,.flac,.aiff,.ogg" onchange="handleAudioUpload(this)" />
+                  <span class="upload-icon">🎵</span>
+                  <div class="upload-title">Drop your audio file here</div>
+                  <div class="upload-sub">or click to browse your files</div>
+                  <div class="upload-formats">MP3 · WAV · FLAC · AIFF · OGG</div>
+                </div>
+                <div class="upload-preview" id="audioPreview">
+                  <div class="preview-icon">🎶</div>
+                  <div class="preview-name" id="audioFileName">—</div>
+                  <div class="preview-size" id="audioFileSize">—</div>
+                  <button class="preview-remove" onclick="removeAudio()">✕</button>
+                </div>
+              </div>
+
+              <div class="field-group" style="margin-top:2rem;">
+                <label style="display:block;margin-bottom:0.8rem;">Cover Artwork <span style="color:var(--muted);font-family:var(--font-b);text-transform:none;letter-spacing:0;font-weight:300;">(JPG, PNG — min 1400×1400px recommended)</span></label>
+                <div style="display:grid;grid-template-columns:160px 1fr;gap:1.5rem;align-items:start;">
+                  <div class="cover-upload" id="coverZone">
+                    <input type="file" id="coverFile" accept=".jpg,.jpeg,.png,.webp" onchange="handleCoverUpload(this)" />
+                    <img class="cover-preview-img" id="coverPreviewImg" alt="Cover" />
+                    <div class="cover-overlay">🖼️<span style="font-size:0.55rem;">Change</span></div>
+                    <span style="font-size:2rem;">🖼️</span>
+                    <span style="font-family:var(--font-m);font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);">Upload Cover</span>
+                  </div>
+                  <div>
+                    <p style="color:var(--muted);font-size:0.85rem;line-height:1.75;margin-bottom:1rem;">Cover art is displayed alongside your track in the database and helps sync supervisors and curators identify your music at a glance.</p>
+                    <ul style="color:var(--muted);font-size:0.82rem;line-height:2;list-style:none;">
+                      <li>✓ Square format (1:1 ratio)</li>
+                      <li>✓ Minimum 1400 × 1400 pixels</li>
+                      <li>✓ JPG or PNG format</li>
+                      <li>✓ No explicit or copyrighted imagery</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-nav">
+                <button class="btn btn-ghost" onclick="prevStep()">← Back</button>
+                <button class="btn btn-primary" onclick="nextStep()">Continue → Metadata</button>
+              </div>
+            </div>
+
+            <!-- ── STEP 3: METADATA ── -->
+            <div class="step-panel" id="panel3">
+              <div class="field-group">
+                <label style="display:block;margin-bottom:0.8rem;">Primary Genre *</label>
+                <div class="genre-chips" id="genreChips">
+                  <button class="genre-chip" onclick="selectGenre(this)">Afrobeats</button>
+                  <button class="genre-chip" onclick="selectGenre(this)">Amapiano</button>
+                  <button class="genre-chip" onclick="selectGenre(this)">Hip-Hop / Rap</button>
+                  <button class="genre-chip" onclick="selectGenre(this)">R&B / Soul</button>
+                  <button class="genre-chip" onclick="selectGenre(this)">Pop</button>
+                  <button class="genre-chip" onclick="selectGenre(this)">Electronic / EDM</button>
+                  <button class="genre-chip" onclick="selectGenre(this)">Indie / Alternative</button>
+                  <button class="genre-chip" onclick="selectGenre(this)">Jazz</button>
+                  <button class="genre-chip" onclick="selectGenre(this)">Gospel / CCM</button>
+                  <button class="genre-chip" onclick="selectGenre(this)">Classical</button>
+                  <button class="genre-chip" onclick="selectGenre(this)">Country</button>
+                  <button class="genre-chip" onclick="selectGenre(this)">Rock</button>
+                  <button class="genre-chip" onclick="selectGenre(this)">Reggae</button>
+                  <button class="genre-chip" onclick="selectGenre(this)">Latin</button>
+                  <button class="genre-chip" onclick="selectGenre(this)">Folk / Acoustic</button>
+                  <button class="genre-chip" onclick="selectGenre(this)">Metal</button>
+                  <button class="genre-chip" onclick="selectGenre(this)">Afro-Pop</button>
+                  <button class="genre-chip" onclick="selectGenre(this)">Drill</button>
+                </div>
+              </div>
+
+              <div class="field-row" style="margin-top:1.6rem;">
+                <div class="input-wrap">
+                  <label>Sub-Genre</label>
+                  <input type="text" id="subGenre" placeholder="e.g. Afro-fusion, Lo-fi Hip-Hop…" />
+                </div>
+                <div class="input-wrap">
+                  <label>Language</label>
+                  <select id="language">
+                    <option>English</option>
+                    <option>Swahili</option>
+                    <option>Yoruba</option>
+                    <option>Igbo</option>
+                    <option>Hausa</option>
+                    <option>Amharic</option>
+                    <option>Zulu</option>
+                    <option>Shona</option>
+                    <option>French</option>
+                    <option>Spanish</option>
+                    <option>Portuguese</option>
+                    <option>Arabic</option>
+                    <option>Instrumental (No Lyrics)</option>
+                    <option>Multiple Languages</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-group" style="margin-top:1.6rem;">
+                <label style="display:block;margin-bottom:0.8rem;">Track Mood / Vibe (select all that apply)</label>
+                <div class="mood-grid">
+                  <button class="mood-btn" onclick="toggleMood(this)"><span>🌙</span><small>Dark</small></button>
+                  <button class="mood-btn" onclick="toggleMood(this)"><span>☀️</span><small>Uplifting</small></button>
+                  <button class="mood-btn" onclick="toggleMood(this)"><span>💫</span><small>Euphoric</small></button>
+                  <button class="mood-btn" onclick="toggleMood(this)"><span>🌊</span><small>Chill</small></button>
+                  <button class="mood-btn" onclick="toggleMood(this)"><span>🔥</span><small>Energetic</small></button>
+                  <button class="mood-btn" onclick="toggleMood(this)"><span>💔</span><small>Melancholic</small></button>
+                  <button class="mood-btn" onclick="toggleMood(this)"><span>🎉</span><small>Party</small></button>
+                  <button class="mood-btn" onclick="toggleMood(this)"><span>🧘</span><small>Meditative</small></button>
+                  <button class="mood-btn" onclick="toggleMood(this)"><span>💪</span><small>Motivational</small></button>
+                  <button class="mood-btn" onclick="toggleMood(this)"><span>❤️</span><small>Romantic</small></button>
+                  <button class="mood-btn" onclick="toggleMood(this)"><span>🌿</span><small>Organic</small></button>
+                  <button class="mood-btn" onclick="toggleMood(this)"><span>🤖</span><small>Futuristic</small></button>
+                </div>
+              </div>
+
+              <div class="field-row" style="margin-top:1.6rem;">
+                <div class="input-wrap">
+                  <label>BPM (Tempo)</label>
+                  <div class="bpm-display"><span id="bpmDisplay">120</span><span class="bpm-unit">BPM</span></div>
+                  <input type="range" id="bpmSlider" min="40" max="200" value="120" oninput="document.getElementById('bpmDisplay').textContent=this.value" />
+                </div>
+                <div class="input-wrap">
+                  <label>Musical Key</label>
+                  <select id="musicalKey">
+                    <option value="">Unknown / Not sure</option>
+                    <optgroup label="Major Keys">
+                      <option>C Major</option><option>C# Major</option><option>D Major</option>
+                      <option>Eb Major</option><option>E Major</option><option>F Major</option>
+                      <option>F# Major</option><option>G Major</option><option>Ab Major</option>
+                      <option>A Major</option><option>Bb Major</option><option>B Major</option>
+                    </optgroup>
+                    <optgroup label="Minor Keys">
+                      <option>A Minor</option><option>Bb Minor</option><option>B Minor</option>
+                      <option>C Minor</option><option>C# Minor</option><option>D Minor</option>
+                      <option>Eb Minor</option><option>E Minor</option><option>F Minor</option>
+                      <option>F# Minor</option><option>G Minor</option><option>Ab Minor</option>
+                    </optgroup>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="input-wrap">
+                  <label>Duration (mm:ss)</label>
+                  <input type="text" id="duration" placeholder="e.g. 3:42" pattern="[0-9]+:[0-5][0-9]" />
+                </div>
+                <div class="input-wrap">
+                  <label>Explicit Content</label>
+                  <select id="explicit">
+                    <option value="clean">Clean — No explicit content</option>
+                    <option value="explicit">Explicit — Contains strong language/content</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="input-wrap" style="margin-top:0.4rem;">
+                <label>Tags (comma-separated)</label>
+                <input type="text" id="tags" placeholder="e.g. summer vibes, dancehall, Lagos, road trip, workout" />
+              </div>
+
+              <div class="form-nav">
+                <button class="btn btn-ghost" onclick="prevStep()">← Back</button>
+                <button class="btn btn-primary" onclick="nextStep()">Continue → Streaming Links</button>
+              </div>
+            </div>
+
+            <!-- ── STEP 4: LINKS ── -->
+            <div class="step-panel" id="panel4">
+              <p style="color:var(--muted);font-size:0.88rem;line-height:1.8;margin-bottom:2rem;">
+                Add your streaming links so sync supervisors, curators, and AI matching can verify and feature your track across the SOUNDPATH network.
+              </p>
+
+              <div id="linksContainer">
+                <div class="link-row">
+                  <div class="link-platform">🎧</div>
+                  <input type="url" placeholder="Spotify track URL (https://open.spotify.com/track/…)" />
+                  <button class="link-remove-btn" onclick="removeLink(this)" title="Remove">✕</button>
+                </div>
+                <div class="link-row">
+                  <div class="link-platform">🎵</div>
+                  <input type="url" placeholder="Apple Music URL (https://music.apple.com/…)" />
+                  <button class="link-remove-btn" onclick="removeLink(this)" title="Remove">✕</button>
+                </div>
+                <div class="link-row">
+                  <div class="link-platform">▶️</div>
+                  <input type="url" placeholder="YouTube URL (https://youtube.com/…)" />
+                  <button class="link-remove-btn" onclick="removeLink(this)" title="Remove">✕</button>
+                </div>
+                <div class="link-row">
+                  <div class="link-platform">🎶</div>
+                  <input type="url" placeholder="SoundCloud URL (https://soundcloud.com/…)" />
+                  <button class="link-remove-btn" onclick="removeLink(this)" title="Remove">✕</button>
+                </div>
+              </div>
+
+              <button class="add-link-btn" onclick="addLink()" style="margin-top:0.8rem;">
+                + Add Another Platform
+              </button>
+
+              <div style="margin-top:2rem;">
+                <div class="input-wrap">
+                  <label>Artist / Band Website</label>
+                  <input type="url" id="artistWebsite" placeholder="https://yourwebsite.com" />
+                </div>
+                <div class="input-wrap">
+                  <label>Contact / Booking Email</label>
+                  <input type="email" id="contactEmail" placeholder="management@yourartist.com" />
+                </div>
+              </div>
+
+              <div class="form-nav">
+                <button class="btn btn-ghost" onclick="prevStep()">← Back</button>
+                <button class="btn btn-primary" onclick="nextStep()">Preview & Submit →</button>
+              </div>
+            </div>
+
+            <!-- ── STEP 5: REVIEW ── -->
+            <div class="step-panel" id="panel5">
+              <p style="color:var(--muted);font-size:0.88rem;margin-bottom:1.8rem;">Review your submission before adding it to the SOUNDPATH database.</p>
+
+              <div class="review-grid">
+                <div class="review-cover" id="reviewCover">🎵<img id="reviewCoverImg" alt="" /></div>
+                <div class="review-table" id="reviewTable">
+                  <div class="review-row"><span class="review-key">Track Title</span><span class="review-val" id="rv-title">—</span></div>
+                  <div class="review-row"><span class="review-key">Artist</span><span class="review-val" id="rv-artist">—</span></div>
+                  <div class="review-row"><span class="review-key">Album / EP</span><span class="review-val" id="rv-album">—</span></div>
+                  <div class="review-row"><span class="review-key">Year</span><span class="review-val" id="rv-year">—</span></div>
+                  <div class="review-row"><span class="review-key">Genre</span><span class="review-val" id="rv-genre">—</span></div>
+                  <div class="review-row"><span class="review-key">BPM / Key</span><span class="review-val" id="rv-bpm">—</span></div>
+                  <div class="review-row"><span class="review-key">Language</span><span class="review-val" id="rv-lang">—</span></div>
+                  <div class="review-row"><span class="review-key">Moods</span>
+                    <div class="review-val review-tags" id="rv-moods">—</div>
+                  </div>
+                  <div class="review-row"><span class="review-key">Audio File</span><span class="review-val" id="rv-audio">Not uploaded</span></div>
+                </div>
+              </div>
+
+              <hr class="divider" />
+
+              <label class="terms-check">
+                <input type="checkbox" id="termsCheck" />
+                <p>I confirm that I am the rights holder or have the legal authority to submit this track. I agree to the <a href="#">SOUNDPATH Terms of Service</a> and <a href="#">Content Policy</a>, and grant SOUNDPATH a non-exclusive licence to display and promote this track within the platform.</p>
+              </label>
+
+              <label class="terms-check">
+                <input type="checkbox" id="aiCheck" />
+                <p>I consent to SOUNDPATH's AI and ML systems analysing this track for genre tagging, mood detection, sync matching, and career intelligence recommendations.</p>
+              </label>
+
+              <div class="form-nav">
+                <button class="btn btn-ghost" onclick="prevStep()">← Back</button>
+                <button class="btn btn-primary btn-lg" onclick="submitTrack()" id="submitBtn">
+                  ⚡ Add to Database
+                </button>
+              </div>
+            </div>
+
+            <!-- ── SUCCESS ── -->
+            <div class="success-panel" id="successPanel">
+              <div class="success-icon">✓</div>
+              <h2 class="success-title">Track <em>Submitted!</em></h2>
+              <p class="success-sub">Your music has been added to the SOUNDPATH database. Our AI is now analysing your track for mood, tempo, genre tags, and sync compatibility.</p>
+              <div class="track-id-badge" id="trackIdBadge">Track ID: SP-XXXXXXXX</div>
+              <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+                <button class="btn btn-primary btn-lg" onclick="submitAnother()">+ Submit Another Track</button>
+                <a href="advisor.html" class="btn btn-teal btn-lg">Talk to AI Advisor</a>
+              </div>
+            </div>
+
+          </div><!-- /form-card-body -->
+        </div><!-- /form-card -->
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar-stack">
+          <div class="info-card">
+            <h4>Why Submit?</h4>
+            <ul class="info-list">
+              <li>AI-powered sync matching with 300+ active briefs</li>
+              <li>Automated genre & mood tagging by ML engine</li>
+              <li>Discoverable by playlist curators worldwide</li>
+              <li>Career score boost from verified track count</li>
+              <li>Included in SOUNDPATH's industry pitch reports</li>
+              <li>Free to submit — no hidden fees</li>
+            </ul>
+          </div>
+
+          <div class="info-card">
+            <h4>Database Stats</h4>
+            <div class="db-stats">
+              <div class="db-stat-row">
+                <span class="db-stat-label">Tracks Submitted</span>
+                <span class="db-stat-val" id="trackCount">—</span>
+              </div>
+              <div class="db-stat-row">
+                <span class="db-stat-label">Artists in DB</span>
+                <span class="db-stat-val">12,847</span>
+              </div>
+              <div class="db-stat-row">
+                <span class="db-stat-label">Active Sync Briefs</span>
+                <span class="db-stat-val">318</span>
+              </div>
+              <div class="db-stat-row">
+                <span class="db-stat-label">Genres Covered</span>
+                <span class="db-stat-val">64</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="info-card" style="background:linear-gradient(135deg,var(--surface),rgba(29,228,180,0.04));border-color:var(--border2);">
+            <h4>AI Analysis Includes</h4>
+            <ul class="info-list">
+              <li>Auto genre & sub-genre detection</li>
+              <li>Mood classification (12 categories)</li>
+              <li>BPM & key detection</li>
+              <li>Sync suitability score</li>
+              <li>Similar artist matching</li>
+              <li>Playlist fit prediction</li>
+            </ul>
+          </div>
+        </aside>
+      </div><!-- /submit-layout -->
+
+      <!-- TRACK LIBRARY PREVIEW -->
+      <div class="library-preview">
+        <div class="sec-label">Database Preview</div>
+        <h2 style="margin-bottom:0.5rem;">Recently Added <em>Tracks</em></h2>
+        <p style="color:var(--muted);margin-bottom:2rem;max-width:500px;">Explore tracks already in the OXYCORP database — discoverable by curators, sync supervisors, and AI matching.</p>
+
+        <div class="library-controls">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="Search tracks, artists, genres…" oninput="filterLibrary(this.value)" />
+          </div>
+          <select class="sort-select" onchange="sortLibrary(this.value)">
+            <option value="recent">Most Recent</option>
+            <option value="bpm-asc">BPM Low → High</option>
+            <option value="bpm-desc">BPM High → Low</option>
+            <option value="az">A → Z</option>
+          </select>
+        </div>
+
+        <div id="trackLibrary"></div>
+      </div>
+
+    </div><!-- /container -->
+  </div>
+
+  <script src="shared1.0.js"></script>
+  <script>
+    // ── State ──
+    let currentStep = 1;
+    const TOTAL_STEPS = 5;
+    let selectedGenre = '';
+    let selectedMoods = [];
+    let audioUploaded = false;
+    let coverUploaded = false;
+
+    // ── Animate track counter ──
+    function animateCount(el, target, duration = 1800) {
+      const start = Date.now();
+      const timer = setInterval(() => {
+        const elapsed = Date.now() - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.round(eased * target).toLocaleString();
+        if (progress === 1) clearInterval(timer);
+      }, 16);
+    }
+    animateCount(document.getElementById('trackCount'), 48213);
+
+    // ── Step navigation ──
+    function updateStepUI() {
+      const titles = ['Track Information', 'Audio & Artwork', 'Metadata & Tags', 'Streaming Links', 'Review & Submit'];
+      document.getElementById('stepTitle').textContent = titles[currentStep - 1];
+      document.getElementById('stepTag').textContent = `Step ${currentStep} of ${TOTAL_STEPS}`;
+
+      document.querySelectorAll('.step-item').forEach((el, i) => {
+        el.classList.remove('active', 'done');
+        if (i + 1 < currentStep) el.classList.add('done');
+        if (i + 1 === currentStep) el.classList.add('active');
+      });
+
+      document.querySelectorAll('.step-panel').forEach((p, i) => {
+        p.classList.toggle('active', i + 1 === currentStep);
+      });
+
+      // Circles
+      for (let i = 1; i <= TOTAL_STEPS; i++) {
+        const sc = document.getElementById('sc' + i);
+        sc.textContent = i < currentStep ? '✓' : i;
+      }
+    }
+
+    function nextStep() {
+      if (currentStep < TOTAL_STEPS) {
+        if (currentStep === TOTAL_STEPS - 1) populateReview();
+        currentStep++;
+        updateStepUI();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+    function prevStep() {
+      if (currentStep > 1) { currentStep--; updateStepUI(); }
+    }
+    function goToStep(n) {
+      if (n < currentStep) { currentStep = n; updateStepUI(); }
+    }
+
+    // ── Genre selection ──
+    function selectGenre(btn) {
+      document.querySelectorAll('.genre-chip').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      selectedGenre = btn.textContent;
+    }
+
+    // ── Mood toggles ──
+    function toggleMood(btn) {
+      btn.classList.toggle('active');
+      const mood = btn.querySelector('small').textContent;
+      selectedMoods = btn.classList.contains('active')
+        ? [...selectedMoods, mood]
+        : selectedMoods.filter(m => m !== mood);
+    }
+
+    // ── Audio upload ──
+    function handleAudioUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+      audioUploaded = true;
+      document.getElementById('audioFileName').textContent = file.name;
+      document.getElementById('audioFileSize').textContent = formatBytes(file.size);
+      document.getElementById('audioPreview').classList.add('show');
+      document.getElementById('audioZone').style.display = 'none';
+
+      // Try to auto-fill duration
+      const audio = new Audio();
+      audio.src = URL.createObjectURL(file);
+      audio.onloadedmetadata = () => {
+        const m = Math.floor(audio.duration / 60);
+        const s = Math.floor(audio.duration % 60).toString().padStart(2, '0');
+        if (!document.getElementById('duration').value) {
+          document.getElementById('duration').value = `${m}:${s}`;
+        }
+      };
+    }
+    function removeAudio() {
+      audioUploaded = false;
+      document.getElementById('audioFile').value = '';
+      document.getElementById('audioPreview').classList.remove('show');
+      document.getElementById('audioZone').style.display = 'block';
+    }
+
+    // ── Cover upload ──
+    function handleCoverUpload(input) {
+      const file = input.files[0];
+      if (!file) return;
+      coverUploaded = true;
+      const url = URL.createObjectURL(file);
+      const img = document.getElementById('coverPreviewImg');
+      img.src = url;
+      img.classList.add('show');
+      document.querySelector('.cover-upload span:not(input)').style.display = 'none';
+      document.querySelector('.cover-upload .cover-overlay').style.display = 'flex';
+    }
+
+    // ── Drag & drop ──
+    const audioZone = document.getElementById('audioZone');
+    audioZone.addEventListener('dragover', e => { e.preventDefault(); audioZone.classList.add('dragover'); });
+    audioZone.addEventListener('dragleave', () => audioZone.classList.remove('dragover'));
+    audioZone.addEventListener('drop', e => {
+      e.preventDefault(); audioZone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) { document.getElementById('audioFile').files = e.dataTransfer.files; handleAudioUpload(document.getElementById('audioFile')); }
+    });
+
+    // ── Streaming links ──
+    const platformIcons = ['🎧', '🎵', '▶️', '🎶', '🌐', '📻', '🎤', '💿'];
+    let linkCount = 4;
+    function addLink() {
+      const row = document.createElement('div');
+      row.className = 'link-row';
+      row.innerHTML = `
+        <div class="link-platform">${platformIcons[linkCount % platformIcons.length]}</div>
+        <input type="url" placeholder="Paste streaming URL here…" />
+        <button class="link-remove-btn" onclick="removeLink(this)" title="Remove">✕</button>
+      `;
+      document.getElementById('linksContainer').appendChild(row);
+      linkCount++;
+      row.querySelector('input').focus();
+    }
+    function removeLink(btn) { btn.closest('.link-row').remove(); }
+
+    // ── Populate review ──
+    function populateReview() {
+      const get = id => document.getElementById(id)?.value || '';
+      document.getElementById('rv-title').textContent  = get('trackTitle')    || '(Untitled)';
+      document.getElementById('rv-artist').textContent = get('artistName')    || '(No artist)';
+      document.getElementById('rv-album').textContent  = get('albumName')     || '—';
+      document.getElementById('rv-year').textContent   = get('releaseYear')   || '—';
+      document.getElementById('rv-genre').textContent  = selectedGenre        || '(Not selected)';
+      document.getElementById('rv-bpm').textContent    = get('bpmSlider') + ' BPM · ' + (get('musicalKey') || 'Key unknown');
+      document.getElementById('rv-lang').textContent   = get('language')      || '—';
+      document.getElementById('rv-audio').textContent  = audioUploaded ? document.getElementById('audioFileName').textContent : 'Not uploaded';
+
+      const moodsEl = document.getElementById('rv-moods');
+      if (selectedMoods.length) {
+        moodsEl.innerHTML = selectedMoods.map(m => `<span class="tag tag-teal" style="font-size:0.58rem;">${m}</span>`).join('');
+      } else {
+        moodsEl.textContent = '—';
+      }
+
+      // Cover preview in review
+      const coverImg = document.getElementById('coverPreviewImg');
+      if (coverImg.src) {
+        const reviewImg = document.getElementById('reviewCoverImg');
+        reviewImg.src = coverImg.src;
+        reviewImg.style.display = 'block';
+        document.querySelector('.review-cover').innerHTML = '';
+        document.querySelector('.review-cover').appendChild(reviewImg);
+      }
+    }
+
+    // ── Submit ──
+    function submitTrack() {
+      const terms = document.getElementById('termsCheck').checked;
+      const ai    = document.getElementById('aiCheck').checked;
+      if (!terms || !ai) {
+        alert('Please accept both agreements to submit your track.');
+        return;
+      }
+
+      const btn = document.getElementById('submitBtn');
+      btn.textContent = '⏳ Submitting…';
+      btn.disabled = true;
+
+      // Simulate API submission (POST to /api/submit-track in production)
+      setTimeout(() => {
+        const trackId = 'SP-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+        document.getElementById('trackIdBadge').textContent = 'Track ID: ' + trackId;
+
+        // Save to localStorage as demo database
+        const entry = {
+          id: trackId,
+          title: document.getElementById('trackTitle').value || 'Untitled',
+          artist: document.getElementById('artistName').value || 'Unknown Artist',
+          genre: selectedGenre || 'Pop',
+          bpm: document.getElementById('bpmSlider').value,
+          key: document.getElementById('musicalKey').value,
+          moods: selectedMoods,
+          year: document.getElementById('releaseYear').value,
+          submittedAt: new Date().toISOString(),
+        };
+        const db = JSON.parse(localStorage.getItem('soundpath_db') || '[]');
+        db.unshift(entry);
+        localStorage.setItem('soundpath_db', JSON.stringify(db));
+
+        // Show success
+        document.getElementById('panel5').style.display = 'none';
+        document.getElementById('stepProgress').style.opacity = '0.4';
+        document.getElementById('successPanel').classList.add('show');
+        buildLibrary();
+      }, 1800);
+    }
+
+    function submitAnother() {
+      currentStep = 1;
+      selectedGenre = ''; selectedMoods = []; audioUploaded = false; coverUploaded = false;
+      document.getElementById('successPanel').classList.remove('show');
+      document.getElementById('stepProgress').style.opacity = '1';
+      document.querySelectorAll('input[type=text], input[type=url], input[type=email], input[type=number], textarea')
+        .forEach(el => el.value = '');
+      document.querySelectorAll('.genre-chip, .mood-btn').forEach(el => el.classList.remove('active'));
+      removeAudio();
+      updateStepUI();
+    }
+
+    // ── Library ──
+    const SEED_TRACKS = [
+      { id:'SP-A1B2C3D4', title:'Golden Hour', artist:'Nova Echo', genre:'Afrobeats', bpm:102, key:'A Minor', moods:['Uplifting','Romantic'], year:2025, submittedAt: new Date(Date.now()-86400000*1).toISOString() },
+      { id:'SP-E5F6G7H8', title:'Lagos Nights', artist:'DJ Kofi', genre:'Amapiano', bpm:112, key:'C Major', moods:['Party','Energetic'], year:2025, submittedAt: new Date(Date.now()-86400000*2).toISOString() },
+      { id:'SP-I9J0K1L2', title:'Skyline (feat. Zara)', artist:'Meridian', genre:'R&B / Soul', bpm:78, key:'F# Minor', moods:['Melancholic','Chill'], year:2024, submittedAt: new Date(Date.now()-86400000*3).toISOString() },
+      { id:'SP-M3N4O5P6', title:'Override', artist:'VRTX', genre:'Electronic / EDM', bpm:138, key:'E Minor', moods:['Energetic','Futuristic'], year:2025, submittedAt: new Date(Date.now()-86400000*4).toISOString() },
+      { id:'SP-Q7R8S9T0', title:'Mama Said', artist:'Ade & The Boys', genre:'Hip-Hop / Rap', bpm:88, key:'G Minor', moods:['Motivational'], year:2025, submittedAt: new Date(Date.now()-86400000*5).toISOString() },
+      { id:'SP-U1V2W3X4', title:'Breathe Easy', artist:'Serene', genre:'Indie / Alternative', bpm:95, key:'D Major', moods:['Chill','Meditative'], year:2024, submittedAt: new Date(Date.now()-86400000*6).toISOString() },
+    ];
+    const GENRE_EMOJIS = { 'Afrobeats':'🌍','Amapiano':'🎷','Hip-Hop / Rap':'🎤','R&B / Soul':'❤️','Electronic / EDM':'⚡','Indie / Alternative':'🎸','Pop':'⭐','Jazz':'🎺','Gospel / CCM':'✝️','Classical':'🎻','Reggae':'🌴','Latin':'💃','Default':'🎵' };
+
+    let allTracks = [];
+    let playingId = null;
+
+    function getAllTracks() {
+      const userTracks = JSON.parse(localStorage.getItem('soundpath_db') || '[]');
+      return [...userTracks, ...SEED_TRACKS];
+    }
+
+    function buildLibrary(filter = '', sort = 'recent') {
+      allTracks = getAllTracks();
+      let tracks = allTracks.filter(t =>
+        !filter || t.title.toLowerCase().includes(filter.toLowerCase()) ||
+        t.artist.toLowerCase().includes(filter.toLowerCase()) ||
+        t.genre.toLowerCase().includes(filter.toLowerCase())
+      );
+      if (sort === 'bpm-asc') tracks.sort((a,b) => a.bpm - b.bpm);
+      if (sort === 'bpm-desc') tracks.sort((a,b) => b.bpm - a.bpm);
+      if (sort === 'az') tracks.sort((a,b) => a.title.localeCompare(b.title));
+
+      const el = document.getElementById('trackLibrary');
+      if (!tracks.length) { el.innerHTML = '<p style="color:var(--muted);padding:2rem 0;text-align:center;font-family:var(--font-m);font-size:0.75rem;letter-spacing:0.1em;">NO TRACKS FOUND</p>'; return; }
+
+      el.innerHTML = tracks.map((t, i) => {
+        const icon = GENRE_EMOJIS[t.genre] || GENRE_EMOJIS['Default'];
+        const moodTags = (t.moods || []).slice(0, 2).map(m => `<span class="tag tag-teal" style="font-size:0.55rem;">${m}</span>`).join('');
+        return `
+          <div class="track-row" data-id="${t.id}">
+            <div class="track-num">${i + 1}</div>
+            <div class="track-art">${icon}</div>
+            <div class="track-info">
+              <div class="track-title">${escHtml(t.title)}</div>
+              <div class="track-artist">${escHtml(t.artist)}</div>
+            </div>
+            <div style="display:flex;gap:0.4rem;align-items:center;">${moodTags}</div>
+            <span class="track-genre">${escHtml(t.genre)}</span>
+            <span class="track-bpm">${t.bpm} BPM</span>
+            <button class="play-btn" onclick="togglePlay('${t.id}', this)" title="Preview">▶</button>
+          </div>`;
+      }).join('');
+    }
+
+    function togglePlay(id, btn) {
+      document.querySelectorAll('.play-btn').forEach(b => { b.classList.remove('playing'); b.textContent = '▶'; });
+      if (playingId === id) { playingId = null; return; }
+      playingId = id;
+      btn.classList.add('playing');
+      btn.textContent = '■';
+      // In production: use Web Audio API or audio element to preview track
+    }
+
+    function filterLibrary(q) { buildLibrary(q, document.querySelector('.sort-select').value); }
+    function sortLibrary(s)   { buildLibrary(document.querySelector('.search-wrap input').value, s); }
+    function escHtml(str)     { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function formatBytes(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+      return (bytes/1048576).toFixed(1) + ' MB';
+    }
+
+    // ── Init ──
+    buildLibrary();
+    updateStepUI();
+  </script>
+</body>
+</html>
