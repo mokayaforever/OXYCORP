@@ -1,0 +1,20 @@
+{
+  "name": "oxycorp",
+  "version": "1.0.0",
+  "description": "AI Music Career Intelligence System",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "ml": "python -m uvicorn ml_service:app --host 0.0.0.0 --port 8000 --reload",
+    "all": "concurrently \"npm start\" \"npm run ml\""
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

@@ -19,7 +19,7 @@ const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
-app.use(express.static(path.join(__dirname, '../')));
+app.use(express.static(__dirname));
 
 // ────────────────────────────────────────────
 // HEALTH CHECK
@@ -210,12 +210,12 @@ Be specific, data-driven, and actionable.`;
 // ────────────────────────────────────────────
 // SERVE PAGES
 // ────────────────────────────────────────────
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../index.html')));
-app.get('/advisor', (req, res) => res.sendFile(path.join(__dirname, '../public/pages/advisor.html')));
-app.get('/analysis', (req, res) => res.sendFile(path.join(__dirname, '../public/pages/career-analysis.html')));
-app.get('/skills', (req, res) => res.sendFile(path.join(__dirname, '../public/pages/skill-assessment.html')));
-app.get('/market', (req, res) => res.sendFile(path.join(__dirname, '../public/pages/market-intelligence.html')));
-app.get('/roadmap', (req, res) => res.sendFile(path.join(__dirname, '../public/pages/roadmap.html')));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/advisor', (req, res) => res.sendFile(path.join(__dirname, 'advisor.html')));
+app.get('/analysis', (req, res) => res.sendFile(path.join(__dirname, 'career-analysis.html')));
+app.get('/skills', (req, res) => res.sendFile(path.join(__dirname, 'skill-assessment.html')));
+app.get('/market', (req, res) => res.sendFile(path.join(__dirname, 'market-intelligence.html')));
+app.get('/roadmap', (req, res) => res.sendFile(path.join(__dirname, 'roadmap.html')));
 
 // ────────────────────────────────────────────
 // START SERVER
