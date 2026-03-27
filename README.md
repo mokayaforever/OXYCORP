@@ -1,4 +1,4 @@
-# 🎵 SOUNDPATH — AI Music Career Intelligence System
+# 🎵 OXYCORP — AI Music Career Intelligence System
 
 A full-stack AI-powered music career guidance platform combining **HTML5/CSS3**, **Node.js**, **Python ML**, and **Large Language Models**.
 
