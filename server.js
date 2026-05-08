@@ -825,8 +825,8 @@ Be specific, data-driven, and actionable.`;
 // ────────────────────────────────────────────
 // SERVE PAGES
 // ────────────────────────────────────────────
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index 1.0.html')));
-app.get('/home', (req, res) => res.sendFile(path.join(__dirname, 'index 1.0.html')));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
+app.get('/home', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/landing', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/advisor', (req, res) => res.sendFile(path.join(__dirname, 'advisor.html')));
 app.get('/analysis', (req, res) => res.sendFile(path.join(__dirname, 'career-analysis.html')));
