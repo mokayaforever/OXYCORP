@@ -29,3 +29,15 @@ staticfiles/
 env/
 venv/
 ENV/
+.env
+.env.local
+.env.*.local
+
+# Secrets & Credentials
+**/secrets.json
+**/credentials.json
+**/*-key.json
+
+# Bunny CDN & Storage
+*.bunny-config
+.bunny-cache/

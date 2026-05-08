@@ -88,14 +88,17 @@
         
         <h1>Market <em>Intelligence</em></h1>
         <p style="color:var(--muted);max-width:540px;margin-top:1rem;">
-          Real-time music industry data processed by Python ML pipelines. Genre trends, platform metrics, sync opportunities, and market signals updated continuously.
+          Live industry trends, viral moments, and sync opportunities. Short-form content is driving 89% of discovery. AI remixing, podcast licensing, and gaming soundtracks are reshaping how artists monetize. Stay ahead of the curve.
         </p>
 
         <!-- Live Ticker -->
         <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-top:2.5rem;overflow:hidden;">
-          <div style="display:flex;align-items:center;gap:1rem;padding:0.7rem 1.2rem;border-bottom:1px solid var(--border);">
-            <div class="pulse-dot" style="width:8px;height:8px;background:var(--teal);border-radius:50%;animation:pulse-ring 2s infinite;"></div>
-            <span style="font-family:var(--font-m);font-size:0.62rem;text-transform:uppercase;letter-spacing:0.15em;color:var(--muted);">Live Market Feed · Python ML Engine</span>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0.7rem 1.2rem;border-bottom:1px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:0.6rem;">
+              <div class="pulse-dot" style="width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse-ring 2s infinite;"></div>
+              <span style="font-size:0.72rem;font-weight:600;color:var(--muted);">Live Market Feed</span>
+            </div>
+            <span id="lastUpdated" style="font-size:0.68rem;color:var(--muted);">Loading…</span>
           </div>
           <div class="ticker-wrap" style="padding:0 1.2rem;">
             <div class="ticker" id="tickerEl"></div>
@@ -124,8 +127,8 @@
           <div class="chart-card fade-up">
             <div class="chart-card-header">
               <div>
-                <div class="chart-title">Global Streaming Trends</div>
-                <div class="chart-subtitle">Monthly streams by genre · 12-month ML forecast</div>
+                <div class="chart-title">Viral Growth Dashboard</div>
+                <div class="chart-subtitle">Trend velocity by genre · TikTok + Shorts + Reels</div>
               </div>
               <span class="tag tag-teal">Live Data</span>
             </div>
@@ -136,74 +139,351 @@
           <div class="chart-card fade-up">
             <div class="chart-card-header">
               <div>
-                <div class="chart-title">Genre Market Share</div>
-                <div class="chart-subtitle">Streaming market share · Growth vs. last quarter</div>
+                <div class="chart-title">Genre Momentum Index</div>
+                <div class="chart-subtitle">Growth rate across all platforms · Real-time</div>
               </div>
-              <span class="tag tag-gold">ML Ranked</span>
+              <span class="tag tag-gold">Live Ranked</span>
             </div>
             <div class="genre-list" id="genreList"></div>
           </div>
 
-          <!-- Revenue by Stream -->
+          <!-- Genre Rankings -->
           <div class="chart-card fade-up">
             <div class="chart-card-header">
               <div>
-                <div class="chart-title">Revenue Per 1M Streams by Platform</div>
-                <div class="chart-subtitle">Average artist payout · USD · 2025 data</div>
+                <div class="chart-title">Genre Momentum Index</div>
+                <div class="chart-subtitle">Growth rate across all platforms · Real-time</div>
               </div>
+              <span class="tag tag-gold">Live Ranked</span>
             </div>
-            <canvas id="revenueChart" height="180"></canvas>
+            <div class="genre-list" id="genreList"></div>
           </div>
         </div>
 
         <div class="market-right">
-          <!-- Opportunities -->
-          <div class="chart-card fade-up">
-            <div class="chart-card-header">
-              <div>
-                <div class="chart-title">Sync Opportunities</div>
-                <div class="chart-subtitle">AI-matched open briefs</div>
-              </div>
-              <span class="tag tag-violet">New</span>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:0.9rem;" id="oppList"></div>
-          </div>
-
-          <!-- Key Stats -->
-          <div class="chart-card fade-up">
-            <div class="chart-card-header">
-              <div><div class="chart-title">Platform Stats</div><div class="chart-subtitle">Key metrics for artists · 2025</div></div>
-            </div>
-            <div style="display:flex;flex-direction:column;gap:1rem;" id="platformStats"></div>
-          </div>
-
-          <!-- ML Signal -->
-          <div class="chart-card fade-up" style="background:linear-gradient(135deg,var(--surface),rgba(29,228,180,0.04));border-color:var(--border2);">
-            <div class="sec-label" style="justify-content:flex-start;margin-bottom:1rem;">ML Signal</div>
-            <h3 style="font-family:var(--font-d);font-size:1.4rem;margin-bottom:0.8rem;">Top Emerging Trend</h3>
-            <p style="color:var(--muted);font-size:0.88rem;line-height:1.75;margin-bottom:1.2rem;">
-              <strong style="color:var(--teal)">Afrobeats × Electronic fusion</strong> is showing the highest velocity growth signal in our ML trend detection model — up <strong style="color:var(--teal)">+340%</strong> YoY on TikTok.
-            </p>
-            <p style="color:var(--muted);font-size:0.88rem;line-height:1.75;margin-bottom:1.5rem;">
-              Sync supervisors in the advertising space are actively seeking tracks in this niche. Our Python pipeline detected 47 open briefs in the last 30 days.
-            </p>
-            <a href="advisor.html" class="btn btn-teal" style="width:100%;justify-content:center;">Ask AI About This Trend</a>
+          <!-- Top Trend Signal -->
+          <div class="chart-card fade-up" style="background:linear-gradient(135deg,var(--surface),rgba(37,99,235,0.03));border-color:var(--border2);">
+            <div class="sec-label" style="justify-content:flex-start;margin-bottom:1rem;">Top Trend</div>
+            <h3 id="topTrendTitle" style="font-family:var(--font-d);font-size:1.3rem;margin-bottom:0.8rem;color:var(--text);">Loading…</h3>
+            <p id="topTrendDetail" style="color:var(--muted);font-size:0.88rem;line-height:1.75;margin-bottom:1.5rem;"></p>
+            <a href="advisor.html" class="btn btn-primary" style="width:100%;justify-content:center;">Ask About This Trend</a>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <script src="../js/shared.js"></script>
+  <script src="shared.js"></script>
   <script>
+    // Use full URL for API calls (includes localhost:8000 port)
+    const API = 'http://localhost:8000/api/market-data/intelligence/';
+    let liveData = null;
+
+    // ── Static fallback ──
+    const FALLBACK = {
+      genres: [
+        { name:'Hip-Hop / Rap', market_share:22.4, growth:4.2 },
+        { name:'Pop',           market_share:20.3, growth:2.1 },
+        { name:'R&B / Soul',    market_share:16.8, growth:8.9 },
+        { name:'Afrobeats',     market_share:14.2, growth:31.5 },
+        { name:'Electronic',    market_share:11.7, growth:15.3 },
+        { name:'Indie',         market_share:8.9,  growth:6.7 },
+        { name:'Amapiano',      market_share:7.4,  growth:42.1 },
+        { name:'Latin',         market_share:6.2,  growth:18.9 },
+      ],
+      trending_tracks: [],
+      ticker: [
+        { label:'TikTok Sounds', val:'+2.1B daily', up:true },
+        { label:'Short-Form Dominance', val:'+89%', up:true },
+        { label:'AI-Generated Tracks', val:'+142M', up:true },
+        { label:'Amapiano Peak', val:'+42.1%', up:true },
+        { label:'YouTube Shorts', val:'+320M/week', up:true },
+        { label:'Cross-Genre Remixes', val:'+156%', up:true },
+      ],
+      top_trend: 'Short-Form Content Revolution + AI Remixing',
+      trend_detail: 'Creators are driving discovery through TikTok, Reels, and Shorts — 89% of music discovery now happens on under-60 second clips. AI-powered remixes and mashups are breaking genre barriers and creating viral moments daily.',
+      last_updated: null,
+      sources: ['fallback'],
+    };
+
+    // ── Fetch live data ──
+    async function loadMarketData() {
+      setLoadingState(true);
+      try {
+        const res = await fetch(API, { 
+          signal: AbortSignal.timeout(12000),
+          headers: { 'Accept': 'application/json' }
+        });
+        const json = await res.json();
+        
+        if (json.success && json.data) {
+          liveData = {
+            ...json.data,
+            is_live: true
+          };
+          renderAll(liveData, true);
+        } else {
+          // API returned but no success
+          console.warn('[Market] API returned false, using fallback:', json);
+          liveData = FALLBACK;
+          renderAll(FALLBACK, false);
+        }
+      } catch (err) {
+        console.warn('[Market] Live fetch failed, using fallback:', err.message);
+        liveData = FALLBACK;
+        renderAll(FALLBACK, false);
+      }
+    }
+
+    function setLoadingState(loading) {
+      document.getElementById('genreList').innerHTML = loading
+        ? '<div style="color:var(--muted);font-size:0.85rem;padding:1rem 0;">Loading live data…</div>' : '';
+      document.getElementById('trendingList').innerHTML = loading
+        ? '<div style="color:var(--muted);font-size:0.85rem;padding:1rem 0;">Fetching charts…</div>' : '';
+    }
+
+    function renderAll(data, isLive) {
+      renderTicker(data.ticker || FALLBACK.ticker);
+      renderGenres(data.genres);
+      renderTrendingTracks(data.trending_tracks || []);
+      renderTopTrend(data.top_trend, data.trend_detail);
+      renderLastUpdated(data.last_updated, data.sources, isLive);
+      redrawCharts(data.genres);
+    }
+
     // ── Ticker ──
-    const tickerData = [
+    function renderTicker(items) {
+      const ticker = document.getElementById('tickerEl');
+      const doubled = [...items, ...items];
+      ticker.innerHTML = doubled.map(d =>
+        `<div class="ticker-item"><span>${d.label}</span><span class="${d.up ? 'up' : 'dn'}">${d.val}</span></div>`
+      ).join('');
+    }
+
+    // ── Genre list ──
+    function renderGenres(genres) {
+      const maxShare = Math.max(...genres.map(g => g.market_share));
+      document.getElementById('genreList').innerHTML = genres.map((g, i) => `
+        <div class="genre-row">
+          <div class="genre-rank">#${i + 1}</div>
+          <div class="genre-name">${g.name}</div>
+          <div class="genre-bar-wrap">
+            <div class="genre-bar-small">
+              <div class="genre-bar-inner" style="width:${(g.market_share / maxShare) * 100}%"></div>
+            </div>
+          </div>
+          <div class="genre-pct">${g.market_share}%</div>
+          <div class="genre-trend ${g.growth >= 0 ? 'trend-up' : 'trend-down'}">${g.growth >= 0 ? '+' : ''}${g.growth}%</div>
+        </div>
+      `).join('');
+    }
+
+    // ── Trending Tracks ──
+    function renderTrendingTracks(tracks) {
+      const el = document.getElementById('trendingList');
+      if (!tracks || tracks.length === 0) {
+        el.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:0.5rem 0;">Chart data loading…</div>';
+        return;
+      }
+      el.innerHTML = tracks.map((t, i) => `
+        <div style="display:flex;align-items:center;gap:1rem;padding:0.75rem 0;border-bottom:1px solid var(--border);">
+          <div style="font-family:var(--font-b);font-size:0.75rem;font-weight:700;color:var(--green);min-width:22px;">#${i+1}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:0.9rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.title}</div>
+            <div style="font-size:0.78rem;color:var(--muted);">${t.artist}</div>
+          </div>
+          ${t.listeners > 0 ? `<div style="font-size:0.72rem;color:var(--muted);white-space:nowrap;">${(t.listeners/1000000).toFixed(1)}M listeners</div>` : ''}
+        </div>
+      `).join('');
+    }
+
+    // ── Top Trend Signal ──
+    function renderTopTrend(trend, detail) {
+      const el = document.getElementById('topTrendTitle');
+      const detailEl = document.getElementById('topTrendDetail');
+      if (el) el.textContent = trend || 'Afrobeats × Electronic fusion';
+      if (detailEl) detailEl.innerHTML = detail
+        ? detail.replace(/("[^"]+")/g, '<strong style="color:var(--green)">$1</strong>')
+        : '';
+    }
+
+    // ── Last Updated ──
+    function renderLastUpdated(ts, sources, isLive) {
+      const el = document.getElementById('lastUpdated');
+      if (!el) return;
+      const srcStr = (sources || []).filter(s => s !== 'fallback').join(', ') || null;
+      
+      if (isLive && ts) {
+        const d = new Date(ts);
+        const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        el.innerHTML = `<span style="color:var(--green);font-weight:600;">● LIVE</span> · Updated ${timeStr}${srcStr ? ` · Sources: ${srcStr}` : ''}`;
+        el.style.color = 'var(--green)';
+      } else {
+        el.innerHTML = `<span style="color:var(--muted);">Curated data</span> · Auto-refreshing...`;
+        el.style.color = 'var(--muted)';
+      }
+    }
+
+    // ── Filter buttons ──
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const filter = this.textContent.trim().toLowerCase();
+        if (!liveData) return;
+        const filtered = filter === 'all genres'
+          ? liveData.genres
+          : liveData.genres.filter(g => g.name.toLowerCase().includes(filter));
+        renderGenres(filtered.length ? filtered : liveData.genres);
+      });
+    });
+
+    // ── Charts ──
+    function redrawCharts(genres) {
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      // Use real genre growth to skew the trend lines
+      const topG = genres[0], midG = genres[2], lowG = genres[4];
+      const growthFactor1 = topG ? (1 + topG.growth / 100) : 1.08;
+      const growthFactor2 = midG ? (1 + midG.growth / 100) : 1.04;
+      const growthFactor3 = lowG ? (1 + lowG.growth / 100) : 1.02;
+      const seed1 = [820,910,980,1050,1180,1240,1310,1390,1450,1520,1640,1780].map((v, i) => Math.round(v * Math.pow(growthFactor1, i / 6)));
+      const seed2 = [420,460,510,580,640,720,810,890,970,1050,1120,1200].map((v, i) => Math.round(v * Math.pow(growthFactor2, i / 6)));
+      const seed3 = [280,310,340,370,410,460,520,580,640,710,780,860].map((v, i) => Math.round(v * Math.pow(growthFactor3, i / 6)));
+      drawLineChart('streamChart', months, [{ data: seed1 }, { data: seed2 }, { data: seed3 }]);
+      drawBarChart('revenueChart', ['TikTok','Spotify','Apple','YouTube','Discord'], [1.2, 3.0, 7.0, 0.8, 4.5], 180);
+    }
+
+    function drawLineChart(canvasId, labels, datasets, height) {
+      const canvas = document.getElementById(canvasId);
+      canvas.height = height || 220;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.offsetWidth || 600;
+      const h = canvas.height;
+      canvas.width = w;
+      ctx.clearRect(0,0,w,h);
+      const pad = { t:20, r:20, b:40, l:50 };
+      const chartW = w - pad.l - pad.r;
+      const chartH = h - pad.t - pad.b;
+      const allVals = datasets.flatMap(d => d.data);
+      const maxVal = Math.max(...allVals) * 1.1;
+      [0.25, 0.5, 0.75, 1.0].forEach(f => {
+        const y = pad.t + chartH * (1 - f);
+        ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(pad.l + chartW, y);
+        ctx.strokeStyle = 'rgba(37,99,235,0.07)'; ctx.lineWidth = 1; ctx.stroke();
+        ctx.fillStyle = 'rgba(100,116,139,0.6)';
+        ctx.font = '10px "Plus Jakarta Sans",sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(Math.round(maxVal * f / 1000) + 'K', pad.l - 8, y + 4);
+      });
+      ctx.fillStyle = 'rgba(100,116,139,0.6)';
+      ctx.font = '10px "Plus Jakarta Sans",sans-serif';
+      ctx.textAlign = 'center';
+      labels.forEach((l, i) => {
+        const x = pad.l + (i / (labels.length - 1)) * chartW;
+        ctx.fillText(l, x, h - 8);
+      });
+      const colours = ['rgba(37,99,235,0.9)','rgba(16,185,129,0.8)','rgba(167,139,250,0.7)'];
+      datasets.forEach((ds, di) => {
+        ctx.beginPath();
+        ds.data.forEach((v, i) => {
+          const x = pad.l + (i / (ds.data.length - 1)) * chartW;
+          const y = pad.t + chartH * (1 - v / maxVal);
+          i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        });
+        ctx.strokeStyle = colours[di]; ctx.lineWidth = 2.5; ctx.stroke();
+        ctx.lineTo(pad.l + chartW, pad.t + chartH); ctx.lineTo(pad.l, pad.t + chartH);
+        ctx.closePath();
+        const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + chartH);
+        grad.addColorStop(0, colours[di].replace('0.9','0.12').replace('0.8','0.1').replace('0.7','0.08'));
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = grad; ctx.fill();
+      });
+    }
+
+    function drawBarChart(canvasId, labels, data, height) {
+      const canvas = document.getElementById(canvasId);
+      canvas.height = height || 180;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.offsetWidth || 600;
+      const h = canvas.height;
+      canvas.width = w;
+      ctx.clearRect(0,0,w,h);
+      const pad = {t:20,r:20,b:50,l:50};
+      const chartW = w - pad.l - pad.r;
+      const chartH = h - pad.t - pad.b;
+      const max = Math.max(...data) * 1.15;
+      const barW = chartW / data.length * 0.55;
+      const colours = ['rgba(37,99,235,0.8)','rgba(16,185,129,0.7)','rgba(167,139,250,0.7)','rgba(251,146,60,0.7)','rgba(239,68,68,0.7)'];
+      data.forEach((v, i) => {
+        const x = pad.l + (i + 0.5) * (chartW / data.length) - barW / 2;
+        const barH = (v / max) * chartH;
+        const y = pad.t + chartH - barH;
+        const grad = ctx.createLinearGradient(0, y, 0, y + barH);
+        grad.addColorStop(0, colours[i % colours.length]);
+        grad.addColorStop(1, colours[i % colours.length].replace('0.8','0.3').replace('0.7','0.25'));
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, y, barW, barH);
+        ctx.fillStyle = 'rgba(30,30,50,0.8)'; ctx.font = '11px "Plus Jakarta Sans",sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText('$' + v.toFixed(2), x + barW / 2, y - 6);
+        ctx.fillStyle = 'rgba(100,116,139,0.8)'; ctx.font = '10px "Plus Jakarta Sans",sans-serif';
+        ctx.fillText(labels[i], x + barW / 2, h - 10);
+      });
+    }
+
+    // ── Platform Stats ──
+    const platforms = [
+      { name:'TikTok',       stat:'3.8B sounds/day', sub:'89% of music discovery' },
+      { name:'Spotify',      stat:'KES 0.39/stream', sub:'640M active users' },
+      { name:'YouTube Shorts',stat:'320M clips/week', sub:'2.7B monthly users' },
+      { name:'Instagram Reels',stat:'2.1B videos', sub:'Cross-viral with feeds' },
+    ];
+    document.getElementById('platformStats').innerHTML = platforms.map(p => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:0.9rem 0;border-bottom:1px solid var(--border);">
+        <div>
+          <div style="font-size:0.82rem;font-weight:600;color:var(--text);">${p.name}</div>
+          <div style="color:var(--muted);font-size:0.78rem;margin-top:0.2rem;">${p.sub}</div>
+        </div>
+        <div style="font-size:0.82rem;font-weight:600;color:var(--green);">${p.stat}</div>
+      </div>
+    `).join('');
+
+    // ── Sync Opportunities (curated — updated periodically) ──
+    const opps = [
+      { title:'Short-Form Creator Campaign',  pay:'$4,000–12,000', meta:'Multi-platform TikTok/Reels campaign. Need 3 variants optimized for vertical video. Viral-ready Afrobeats tracks preferred.', tags:['Afrobeats','Viral','Trending'] },
+      { title:'AI-Endorsed Remix License',  pay:'$2,000–6,000', meta:'Brand launching AI-remixed catalog. License your track for AI remixing & beat-making apps. Royalties included.', tags:['AI','Cross-Genre','Modern'] },
+      { title:'Podcast + Music Integration',   pay:'$1,500–4,500', meta:'5 episodes of true crime podcast seeking moody R&B + electronic segments. 15–30 sec placements.', tags:['R&B','Podcast','Licensing'] },
+      { title:'Gaming × Music',  pay:'$8,000–20,000', meta:'AAA game studio seeking licensed tracks for trailers & in-game playlists. Electronic, Hip-Hop, Trap preferred.', tags:['Gaming','Electronic','Exclusive'] },
+    ];
+    document.getElementById('oppList').innerHTML = opps.map(o => `
+      <div class="opp-card">
+        <div class="opp-header">
+          <div class="opp-title">${o.title}</div>
+          <div class="opp-pay">${o.pay}</div>
+        </div>
+        <div class="opp-meta">${o.meta}</div>
+        <div class="opp-tags">${o.tags.map(t => `<span class="tag tag-gold" style="font-size:0.55rem;">${t}</span>`).join('')}</div>
+      </div>
+    `).join('');
+
+    // ── Init & auto-refresh ──
+    window.addEventListener('load', () => {
+      loadMarketData();
+      // Auto-refresh every 5 minutes for live updates
+      setInterval(loadMarketData, 5 * 60 * 1000);
+    });
+
+    const observer = new IntersectionObserver(e => e.forEach(el => { if(el.isIntersecting) el.target.style.opacity=1; }), { threshold: 0.1 });
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
+
       { label:'Afrobeats Global', val:'+18.4%', up:true },
       { label:'Amapiano Streams', val:'+27.1%', up:true },
-      { label:'Spotify Payouts', val:'$0.003/stream', up:false },
-      { label:'Apple Music', val:'$0.007/stream', up:true },
+      { label:'Spotify Payouts', val:'KES 0.39/stream', up:false },
+      { label:'Apple Music', val:'KES 0.91/stream', up:true },
       { label:'TikTok Sounds', val:'+340M/day', up:true },
-      { label:'Sync Market', val:'$2.8B', up:true },
+      { label:'Sync Market', val:'KES 364B', up:true },
       { label:'Hip-Hop Market Share', val:'24.1%', up:false },
       { label:'Live Music Revenue', val:'+22%', up:true },
       { label:'Indie Artist Revenue', val:'+31%', up:true },
@@ -267,10 +547,10 @@
 
     // ── Platform Stats ──
     const platforms = [
-      { name:'Spotify',     stat:'$0.003/stream',   sub:'608M active users' },
-      { name:'Apple Music', stat:'$0.007/stream',   sub:'100M+ subscribers' },
-      { name:'YouTube Music',stat:'$0.0008/view',   sub:'2.7B monthly users' },
-      { name:'TIDAL',       stat:'$0.012/stream',   sub:'Artist-friendly rates' },
+      { name:'Spotify',     stat:'KES 0.39/stream',   sub:'608M active users' },
+      { name:'Apple Music', stat:'KES 0.91/stream',   sub:'100M+ subscribers' },
+      { name:'YouTube Music',stat:'KES 0.10/view',   sub:'2.7B monthly users' },
+      { name:'TIDAL',       stat:'KES 1.56/stream',   sub:'Artist-friendly rates' },
     ];
     document.getElementById('platformStats').innerHTML = platforms.map(p => `
       <div style="display:flex;justify-content:space-between;align-items:center;padding:0.9rem 0;border-bottom:1px solid var(--border);">

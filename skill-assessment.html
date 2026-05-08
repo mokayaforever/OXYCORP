@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Skill Assessment — SOUNDPATH</title>
+  <title>Skill Assessment — OXYCORP</title>
   <link rel="stylesheet" href="global.css" />
   <style>
     .assess-hero { padding: 7rem 0 4rem; }
@@ -47,7 +47,7 @@
     .radar-container { display: flex; gap: 3rem; align-items: center; flex-wrap: wrap; }
     .radar-wrap { flex-shrink: 0; }
     .skill-bars { flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 1.2rem; }
-    .skill-bar-row { }
+
     .skill-bar-header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
     .skill-bar-name { font-family: var(--font-m); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text); }
     .skill-bar-pct { font-family: var(--font-m); font-size: 0.68rem; color: var(--gold); }
@@ -71,15 +71,8 @@
 </head>
 <body>
   <div class="page-wrap">
-    <section class="assess-hero">
-      <div class="container">
-        <div class="sec-label">AI Assessment</div>
-        <h1>Skill <em>Assessment</em></h1>
-        <p style="color:var(--muted);max-width:540px;margin-top:1rem;">
-          Answer 12 questions and our AI will evaluate your musical, technical, and business skills — then deliver a personalised development plan.
-        </p>
-      </div>
-    </section>
+    <!-- ASSESSMENT SECTION -->
+    <section id="assessmentSection" class="assess-hero">
 
     <!-- QUIZ -->
     <div class="container" id="quizSection" style="padding-bottom:6rem;max-width:800px;">
@@ -124,8 +117,9 @@
       </div>
     </div>
   </div>
+  </section>
 
-  <script src="../js/shared.js"></script>
+  <script src="shared.js"></script>
   <script>
     const questions = [
       { cat:'Musical Ability',    q:'How would you rate your instrumental or vocal proficiency?',         opts:['Beginner — still learning basics','Intermediate — competent but developing','Advanced — highly proficient','Professional — performance-ready level'] },
@@ -141,6 +135,8 @@
       { cat:'Networking',         q:'How strong is your music industry network?',                         opts:['Just starting — very few connections','A few local connections and collaborators','Good network — producers, bookers, bloggers','Strong — labels, managers, sync contacts'] },
       { cat:'Mental Resilience',  q:'How do you handle creative rejection and career setbacks?',         opts:['Struggling — setbacks affect me deeply','I recover but it takes significant time','Resilient — I bounce back fairly quickly','Very resilient — I use rejection as fuel'] },
     ];
+
+    const API_BASE = '/api';
 
     let currentQ = 0, answers = [];
 
@@ -187,28 +183,49 @@
       loadQ(0);
     }
 
-    function showResults() {
+    async function showResults() {
+      // Ensure we have all 12 answers
+      if (answers.length < 12 || answers.some(a => a === undefined)) {
+        alert('Please answer all questions before viewing results.');
+        return;
+      }
+      
+      try {
+        const response = await fetch(`${API_BASE}/skill-assessments`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ quiz_answers: answers })
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          displayAssessmentResults(result);
+        } else {
+          const errorText = await response.text();
+          alert(`Assessment failed: ${response.status} ${response.statusText}\n${errorText}`);
+        }
+      } catch (error) {
+        alert(`Error connecting to server: ${error.message}`);
+      }
+    }
+
+    function displayAssessmentResults(result) {
       document.getElementById('quizSection').style.display = 'none';
       const rs = document.getElementById('resultsSection');
       rs.style.display = 'block';
 
-      // Compute skill scores from answers (0-3 → 0-100)
-      const musicSkill  = Math.round(((answers[0]||0) + (answers[1]||0)) / 6 * 100);
-      const production  = Math.round(((answers[2]||0) + (answers[3]||0)) / 6 * 100);
-      const business    = Math.round(((answers[4]||0) + (answers[5]||0)) / 6 * 100);
-      const marketing   = Math.round(((answers[6]||0) + (answers[7]||0)) / 6 * 100);
-      const live        = Math.round(((answers[8]||0) + (answers[9]||0)) / 6 * 100);
-      const networking  = Math.round(((answers[10]||0) + (answers[11]||0)) / 6 * 100);
+      const musicSkill = result.musical_skill_score;
+      const production = result.technical_skill_score;
+      const business = result.business_skill_score;
 
       // Render skill bars
       const skills = [
         { name:'Musical Ability',  pct: musicSkill },
         { name:'Production',       pct: production },
         { name:'Business',         pct: business },
-        { name:'Marketing',        pct: marketing },
-        { name:'Live Performance', pct: live },
-        { name:'Networking',       pct: networking },
+        
       ];
+
       const barsEl = document.getElementById('skillBars');
       barsEl.innerHTML = skills.map(s => `
         <div class="skill-bar-row">
@@ -221,10 +238,14 @@
       `).join('');
 
       // Radar chart
-      drawRadar([musicSkill, production, business, marketing, live, networking]);
+      drawRadar([musicSkill, production, business]);
 
       // AI Recommendations
-      const recs = generateRecs(musicSkill, production, business, marketing, live, networking);
+      const recs = result.recommended_training.map(training => ({
+        prio: 'med',  // Default priority
+        title: 'Recommended Training',
+        body: training
+      }));
       document.getElementById('recsGrid').innerHTML = recs.map(r => `
         <div class="rec-card">
           <div class="rec-prio prio-${r.prio}">${r.prio.toUpperCase()} PRIORITY</div>
@@ -239,7 +260,7 @@
     function drawRadar(scores) {
       const canvas = document.getElementById('radarChart');
       const ctx = canvas.getContext('2d');
-      const labels = ['Music','Production','Business','Marketing','Live','Network'];
+      const labels = ['Musical','Technical','Business'];
       const n = labels.length;
       const cx = 140, cy = 140, r = 110;
 
@@ -300,18 +321,6 @@
         const y = cy + Math.sin(angle) * (r + 22) + 4;
         ctx.fillText(l, x, y);
       });
-    }
-
-    function generateRecs(music, prod, biz, mkt, live, net) {
-      const all = [
-        { area: music,  prio: music < 50 ? 'high' : 'low',  title:'Sharpen Core Skills',     body:'Invest in weekly instrument or vocal coaching. Apps like Yousician, or a local tutor, can accelerate musicianship by 40% in 6 months.' },
-        { area: prod,   prio: prod < 50 ? 'high' : 'med',   title:'Level Up Production',     body:'Master one DAW deeply (Ableton, FL Studio, or Logic). Take a structured online course from Berklee Online or Point Blank Music School.' },
-        { area: biz,    prio: biz < 50 ? 'high' : 'low',    title:'Master Music Business',   body:'Register with a Performing Rights Organisation (ASCAP, BMI, SAMRO). Understand how streaming royalties, sync fees, and publishing splits work.' },
-        { area: mkt,    prio: mkt < 50 ? 'high' : 'med',    title:'Build Content Strategy',  body:'Post 5x/week on TikTok with behind-the-scenes, process, and performance content. Use CapCut for editing and track analytics weekly.' },
-        { area: live,   prio: live < 50 ? 'med' : 'low',    title:'Strengthen Live Show',    body:'Book open mics and support slots to build stage confidence. Invest in a professional stage plot, tech rider, and at least 2 merch items.' },
-        { area: net,    prio: net < 50 ? 'med' : 'low',     title:'Grow Your Network',       body:'Attend 2 industry events per quarter. Join online communities (SubmitHub, SoundBetter). Collaborate with 1 new artist per month.' },
-      ];
-      return all.sort((a,b) => { const p = {high:0,med:1,low:2}; return p[a.prio] - p[b.prio]; }).slice(0, 6);
     }
 
     // Init

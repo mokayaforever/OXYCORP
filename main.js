@@ -6,6 +6,8 @@ const state = {
   currentBookingCoachId: null,
 };
 
+const API_BASE = '/api';
+
 // ═══════════════════════════════════════════════ INIT
 document.addEventListener('DOMContentLoaded', () => {
   checkSession();
@@ -54,7 +56,7 @@ function closeMobile() {
 // ═══════════════════════════════════════════════ AUTH
 async function checkSession() {
   try {
-    const res = await fetch('/api/session');
+    const res = await fetch(`${API_BASE}/session`);
     const data = await res.json();
     if (data.user) setUser(data.user);
   } catch (e) {}
@@ -84,7 +86,7 @@ async function handleLogin() {
   }
 
   try {
-    const res = await fetch('/api/login', {
+    const res = await fetch(`${API_BASE}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
@@ -126,7 +128,7 @@ async function handleRegister() {
   }
 
   try {
-    const res = await fetch('/api/register', {
+    const res = await fetch(`${API_BASE}/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, password, role, genre, experience })
@@ -147,7 +149,7 @@ async function handleRegister() {
 }
 
 async function logout() {
-  await fetch('/api/logout', { method: 'POST' });
+  await fetch(`${API_BASE}/logout`, { method: 'POST' });
   clearUser();
   showToast('Signed out successfully.', 'success');
 }
@@ -173,7 +175,7 @@ async function loadCoaches() {
         <div class="coach-card__bio">${c.bio}</div>
         <div class="coach-card__footer">
           <div>
-            <div class="coach-price">$${c.price_per_session} <small>/ session</small></div>
+            <div class="coach-price">KES ${c.price_per_session.toLocaleString()} <small>/ session</small></div>
             <div class="coach-sessions">${c.sessions_completed}+ sessions</div>
           </div>
           <button class="btn btn--accent btn--sm" onclick="openBooking(${c.id}, '${c.name}')">Book →</button>

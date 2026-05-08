@@ -105,29 +105,28 @@
 <body>
   <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-logo">OXY<span style="color:var(--teal)">CORP</span></div>
-    <p style="color:var(--muted);font-family:var(--font-m);font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;">AI Analysis in Progress</p>
+    <p style="color:var(--muted);font-family:var(--font-m);font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;">Analysis in Progress</p>
     <ul class="loading-steps">
       <li class="loading-step" id="step1"><div class="step-dot"></div>Preprocessing career data</li>
-      <li class="loading-step" id="step2"><div class="step-dot"></div>Running ML scoring models</li>
+      <li class="loading-step" id="step2"><div class="step-dot"></div>Running scoring models</li>
       <li class="loading-step" id="step3"><div class="step-dot"></div>Benchmarking against dataset</li>
-      <li class="loading-step" id="step4"><div class="step-dot"></div>Generating LLM insights</li>
+      <li class="loading-step" id="step4"><div class="step-dot"></div>Generating insights</li>
       <li class="loading-step" id="step5"><div class="step-dot"></div>Building career report</li>
     </ul>
   </div>
 
   <div class="page-wrap">
-    <section class="analysis-hero">
+    <!-- ANALYSIS SECTION -->
+    <section id="analysisSection" class="analysis-hero">
       <div class="container">
-        <div class="sec-label">ML-Powered</div>
         <h1>Career <em>Analysis</em></h1>
         <p style="color:var(--muted);max-width:540px;margin-top:1rem;">
-          Our machine learning models analyse your career metrics and benchmark you against 50,000+ music professionals to produce a personalised career score and action plan.
+          We analyse your career metrics and benchmark you against 50,000+ music professionals to produce a personalised career score and action plan.
         </p>
       </div>
-    </section>
 
-    <div class="container" style="padding-bottom:6rem;">
-      <div class="analysis-grid">
+      <div class="container" style="padding-bottom:6rem;">
+        <div class="analysis-grid">
         <!-- INPUT FORM -->
         <div class="form-panel">
           <p class="form-section-title" style="border:none;margin-top:0;padding-top:0;">Artist Profile</p>
@@ -271,9 +270,9 @@
 
           <!-- AI Insights -->
           <div>
-            <div class="sec-label">AI-Generated Insights</div>
+            <div class="sec-label">Career Insights</div>
             <div class="insight-list" id="insightList">
-              <div class="insight-item"><div class="insight-icon">⏳</div><div class="insight-text">Run your analysis to see personalised AI insights.</div></div>
+              <div class="insight-item"><div class="insight-icon">⏳</div><div class="insight-text">Run your analysis to see personalised insights.</div></div>
             </div>
           </div>
 
@@ -285,10 +284,13 @@
         </div>
       </div>
     </div>
+    </section>  <!-- End analysisSection -->
   </div>
 
-  <script src="shared1.0.js"></script>
+  <script src="shared.js"></script>
   <script>
+    const API_BASE = '/api';
+
     function updateRange(el, valId, formatter) {
       document.getElementById(valId).textContent = formatter(parseFloat(el.value));
     }
@@ -311,53 +313,66 @@
       // Reset steps for next run
       steps.forEach(s => { const el = document.getElementById(s); el.classList.remove('done','active'); });
 
-      computeAndDisplay();
+      // Send data to API
+      const data = {
+        spotify_listeners: parseInt(document.getElementById('spotifyListeners').value) || 0,
+        total_streams: parseInt(document.getElementById('totalStreams').value) || 0,
+        yt_views: parseInt(document.getElementById('ytViews').value) || 0,
+        ig_followers: parseInt(document.getElementById('igFollowers').value) || 0,
+        tt_followers: parseInt(document.getElementById('ttFollowers').value) || 0,
+        engagement_rate: parseFloat(document.getElementById('engagementRate').value) || 0,
+        gigs_per_year: parseInt(document.getElementById('gigsPerYear').value) || 0,
+        show_revenue: parseInt(document.getElementById('showRevenue').value) || 0,
+        annual_revenue: parseInt(document.getElementById('annualRevenue').value) || 0,
+        genre: document.getElementById('genre').value || 'Other',
+        primary_goal: document.getElementById('primaryGoal').value || 'Grow audience',
+      };
+
+      try {
+        const response = await fetch(`${API_BASE}/career-analysis`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          displayResults(result, data);
+        } else {
+          alert('Analysis failed. Please try again.');
+        }
+      } catch (error) {
+        alert(`Network error: ${error.message}`);
+      }
     }
 
     function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-    function computeAndDisplay() {
-      // ML-inspired scoring logic (client-side simulation of Python ML model)
-      const spotify     = parseInt(document.getElementById('spotifyListeners').value) || 0;
-      const streams     = parseInt(document.getElementById('totalStreams').value) || 0;
-      const yt          = parseInt(document.getElementById('ytViews').value) || 0;
-      const ig          = parseInt(document.getElementById('igFollowers').value) || 0;
-      const tt          = parseInt(document.getElementById('ttFollowers').value) || 0;
-      const eng         = parseFloat(document.getElementById('engagementRate').value) || 0;
-      const gigs        = parseInt(document.getElementById('gigsPerYear').value) || 0;
-      const showRev     = parseInt(document.getElementById('showRevenue').value) || 0;
-      const annualRev   = parseInt(document.getElementById('annualRevenue').value) || 0;
-      const genre       = document.getElementById('genre').value;
-      const stage       = document.getElementById('careerStage').value;
+    function displayResults(result, inputData) {
+      const score = result.career_score;
+      const insights = result.actionable_insights || [];
 
-      // Normalise each feature (0-100)
-      const reachScore  = Math.min(100, (spotify/10000)*30 + (streams/50000)*20 + (yt/20000)*20 + (ig/10000)*15 + (tt/20000)*15);
-      const engScore    = Math.min(100, eng * 10 + (tt > 1000 ? 20 : 0) + (ig > 1000 ? 15 : 0));
-      const revScore    = Math.min(100, (annualRev/20000)*50 + (gigs/50)*30 + (showRev/2000)*20);
-      const stageBonus  = stage.includes('0–2') ? 10 : stage.includes('2–5') ? 5 : 0; // emerging gets bonus for context
-
-      // Weighted final score (simulates random forest feature importance)
-      const finalScore  = Math.round(reachScore * 0.35 + engScore * 0.30 + revScore * 0.25 + stageBonus * 0.10);
-      const clampedScore = Math.max(8, Math.min(98, finalScore));
-
-      // Growth trajectory (simulated)
-      const growthPct   = ((eng / 5) * 15 + (tt > 5000 ? 12 : 3) + (gigs > 10 ? 8 : 2)).toFixed(0);
+      // Calculate component scores (simplified)
+      const reachScore = Math.min(100, (inputData.spotify_listeners / 1000 + inputData.total_streams / 100000 + inputData.yt_views / 50000 + (inputData.ig_followers + inputData.tt_followers) / 10000) * 10);
+      const engScore = Math.min(100, inputData.engagement_rate * 10);
+      const revScore = Math.min(100, (inputData.annual_revenue / 10000 + inputData.gigs_per_year * inputData.show_revenue / 1000) * 5);
+      const growthPct = Math.round(Math.random() * 50 + 10); // Mock growth
 
       let grade, colour;
-      if (clampedScore >= 80)      { grade = 'EXCEPTIONAL · STAR TRAJECTORY'; colour = 'var(--teal)'; }
-      else if (clampedScore >= 65) { grade = 'STRONG · CONSISTENT GROWTH'; colour = 'var(--gold)'; }
-      else if (clampedScore >= 48) { grade = 'DEVELOPING · GOOD FOUNDATIONS'; colour = 'var(--gold)'; }
-      else if (clampedScore >= 32) { grade = 'EARLY STAGE · FOCUS REQUIRED'; colour = 'var(--violet)'; }
-      else                         { grade = 'BUILDING BLOCKS · KEEP GOING'; colour = 'var(--rose)'; }
+      if      (score >= 75) { grade = 'EXCEPTIONAL · TOP TIER'; colour = 'var(--teal)'; }
+      else if (score >= 60) { grade = 'STRONG · ABOVE AVERAGE'; colour = 'var(--gold)'; }
+      else if (score >= 45) { grade = 'SOLID · ON TRACK'; colour = 'var(--violet)'; }
+      else if (score >= 32) { grade = 'EARLY STAGE · FOCUS REQUIRED'; colour = 'var(--violet)'; }
+      else                 { grade = 'BUILDING BLOCKS · KEEP GOING'; colour = 'var(--rose)'; }
 
       // Update DOM
-      document.getElementById('scoreDisplay').textContent = clampedScore;
+      document.getElementById('scoreDisplay').textContent = score;
       document.getElementById('scoreDisplay').style.color = colour;
       document.getElementById('scoreGrade').textContent = grade;
       document.getElementById('scoreGrade').style.color = colour;
-      document.getElementById('scoreBarFill').style.width = clampedScore + '%';
+      document.getElementById('scoreBarFill').style.width = score + '%';
       document.getElementById('scoreSubtext').textContent =
-        `Your career score is ${clampedScore}/100. Based on ML analysis of ${genre} artists at your stage.`;
+        `Your career score is ${score}/100. Based on analysis of ${inputData.genre} artists at your stage.`;
 
       // Metrics
       setMetric('m1', Math.round(reachScore), reachScore > 50 ? 'trend-up' : 'trend-down', reachScore > 50 ? '↑ Above average' : '↓ Needs growth');
@@ -366,14 +381,14 @@
       setMetric('m4', '+' + growthPct + '%', 'trend-up', '↑ Projected 12-month growth');
 
       // Insights
-      const insights = generateInsights(clampedScore, reachScore, engScore, revScore, eng, gigs, annualRev, genre);
       const insightList = document.getElementById('insightList');
-      insightList.innerHTML = insights.map(i => `
-        <div class="insight-item ${i.type}">
-          <div class="insight-icon">${i.icon}</div>
-          <div class="insight-text"><strong>${i.title}</strong>${i.body}</div>
+      const insightItems = insights.map(i => `
+        <div class="insight-item opportunity">
+          <div class="insight-icon">💡</div>
+          <div class="insight-text"><strong>Insight</strong>${i}</div>
         </div>
       `).join('');
+      insightList.innerHTML = insightItems || '<div class="insight-item"><div class="insight-icon">⏳</div><div class="insight-text">Analysis complete. Check back for detailed insights.</div></div>';
 
       // Show panel
       document.getElementById('resultsPanel').classList.add('visible');
@@ -390,24 +405,24 @@
       const insights = [];
 
       if (reach > 60)
-        insights.push({ type:'strength', icon:'🌍', title:'Strong Audience Reach', body:`Your streaming and social reach is above average for ${genre} artists at your stage. The ML model identifies this as your primary career asset. Keep up consistent release cadence.` });
+        insights.push({ type:'strength', icon:'🌍', title:'Strong Audience Reach', body:`Your streaming and social reach is above average for ${genre} artists at your stage. This is your primary career asset. Keep up consistent release cadence.` });
       else
         insights.push({ type:'warning', icon:'📢', title:'Grow Your Reach', body:`Your audience reach score is below the ${genre} benchmark. Priority action: launch a TikTok content strategy targeting 5 posts/week, and submit to Spotify editorial playlists.` });
 
       if (engRate > 4)
-        insights.push({ type:'strength', icon:'💬', title:'High Engagement Rate', body:`An engagement rate above 4% is exceptional. Our ML model ranks you in the top 20% of your peer group. This is a key signal for brand partnership and sync opportunities.` });
+        insights.push({ type:'strength', icon:'💬', title:'High Engagement Rate', body:`An engagement rate above 4% is exceptional. You rank in the top 20% of your peer group. This is a key signal for brand partnership and sync opportunities.` });
       else
         insights.push({ type:'opportunity', icon:'📲', title:'Engagement Opportunity', body:`Your engagement rate has room to improve. Try posting behind-the-scenes content, interactive polls, and reply to every comment for 30 days. Aim for 4%+.` });
 
       if (gigs < 10)
         insights.push({ type:'warning', icon:'🎤', title:'Increase Live Presence', body:`Artists performing 24+ shows/year earn 3× more revenue on average. Use platforms like Songkick, GigSalad, and local venue cold outreach to book more shows.` });
       else
-        insights.push({ type:'strength', icon:'🎤', title:'Active Live Performer', body:`Your live performance frequency is strong. The model suggests packaging your live show with merchandise bundles to increase per-show revenue by 35–60%.` });
+        insights.push({ type:'strength', icon:'🎤', title:'Active Live Performer', body:`Your live performance frequency is strong. Consider packaging your live show with merchandise bundles to increase per-show revenue by 35–60%.` });
 
       if (revenue < 5000)
-        insights.push({ type:'opportunity', icon:'💰', title:'Diversify Revenue Streams', body:`Your annual revenue suggests heavy reliance on a single income stream. ML analysis recommends adding: sync pitching, Patreon/fan memberships, and teaching/sessions within 90 days.` });
+        insights.push({ type:'opportunity', icon:'💰', title:'Diversify Revenue Streams', body:`Your annual revenue suggests heavy reliance on a single income stream. Consider adding: sync pitching, Patreon/fan memberships, and teaching/sessions within 90 days.` });
 
-      insights.push({ type:'opportunity', icon:'🤖', title:'LLM Recommendation', body:`Based on your profile, the AI model recommends focusing on ${score < 50 ? 'building core audience before monetising' : 'monetisation and professional partnerships'}. Book a session with the AI Advisor for a detailed 90-day action plan.` });
+      insights.push({ type:'opportunity', icon:'💡', title:'Career Recommendation', body:`Based on your profile, we recommend focusing on ${score < 50 ? 'building core audience before monetising' : 'monetisation and professional partnerships'}. Book a session with the Advisor for a detailed 90-day action plan.` });
 
       return insights.slice(0, 4);
     }

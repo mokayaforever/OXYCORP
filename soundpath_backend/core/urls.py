@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 
-from apps.users.views import UserViewSet, UserProfileViewSet
+from apps.users.views import UserViewSet, UserProfileViewSet, login_view, register_view, logout_view, session_view
 from apps.ai_engine.views import CareerAnalysisViewSet, SkillAssessmentViewSet, CareerRoadmapViewSet, MilestoneViewSet
 from apps.communication.views import ChatSessionViewSet, ChatMessageViewSet
 from apps.market.views import MarketDataViewSet, UserMetricsUploadViewSet
@@ -29,5 +29,9 @@ router.register(r'matches', CollaborationMatchViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('api/login', login_view, name='login'),
+    path('api/register', register_view, name='register'),
+    path('api/logout', logout_view, name='logout'),
+    path('api/session', session_view, name='session'),
     path('api-auth/', include('rest_framework.urls')),
 ]

@@ -1,5 +1,5 @@
 """
-SOUNDPATH — Python Machine Learning Service
+OXYCORP — Python Machine Learning Service
 FastAPI backend serving ML models for career scoring,
 skill analysis, market intelligence, and recommendations.
 
@@ -17,8 +17,8 @@ import math
 from datetime import datetime
 
 app = FastAPI(
-    title="SOUNDPATH ML Service",
-    description="Machine Learning models for music career intelligence",
+    title="OXYCORP ML Service",
+    description="Machine Learning models for music career intelligence. This service is STRICTLY limited to music-related endpoints only. No general-purpose AI or Q&A functionality.",
     version="1.0.0"
 )
 
@@ -29,6 +29,26 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ─────────────────────────────────────────────────────
+# MUSIC-ONLY GUARD
+# This service processes ONLY music career data.
+# Any general Q&A or non-music endpoint should be refused.
+# ─────────────────────────────────────────────────────
+MUSIC_ONLY_NOTICE = {
+    "error": "This service is dedicated exclusively to music career intelligence.",
+    "allowed_endpoints": ["/predict", "/skill-analysis", "/market-trends", "/recommendations"],
+    "message": "Please use one of the music-specific endpoints listed above."
+}
+
+@app.post("/ask")
+@app.get("/ask")
+def refuse_general_queries():
+    """Guard endpoint — refuses any attempt to use this service for non-music queries."""
+    raise HTTPException(
+        status_code=400,
+        detail=MUSIC_ONLY_NOTICE
+    )
 
 # ─────────────────────────────────────────────────────
 # PYDANTIC SCHEMAS

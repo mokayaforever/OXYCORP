@@ -1,16 +1,20 @@
-// shared.js — injects nav, footer, orbs into every page
+// shared1.0.js — injects nav, footer, orbs into every page
 
-
+function getActivePage() {
+  const path = window.location.pathname.split('/').pop();
+  return path || 'index 1.0.html';
+}
 
 function injectNav() {
   const active = getActivePage();
   const pages = [
-    { href: 'index 1.0.html',            label: 'Home',      file: 'index.html' },
+    { href: 'index 1.0.html',       label: 'Home',      file: 'index 1.0.html' },
     { href: 'advisor.html',             label: 'AI Advisor',file: 'advisor.html' },
     { href: 'career-analysis.html',     label: 'Analysis',  file: 'career-analysis.html' },
     { href: 'skill-assessment.html',    label: 'Skills',    file: 'skill-assessment.html' },
     { href: 'market-intelligence.html', label: 'Market',    file: 'market-intelligence.html' },
     { href: 'roadmap.html',             label: 'Roadmap',   file: 'roadmap.html' },
+    { href: 'submit-music.html',        label: 'Submit',    file: 'submit-music.html' },
   ];
 
   const linksHtml = pages.map(p => `
@@ -20,7 +24,7 @@ function injectNav() {
   const nav = document.createElement('nav');
   nav.innerHTML = `
     <div class="nav-inner">
-      <a href="../index.html" class="logo">SOUND<span>PATH</span></a>
+      <a href="index 1.0.html" class="logo">OXY<span>CORP</span></a>
       <ul class="nav-links">${linksHtml}</ul>
       <a href="advisor.html" class="nav-badge">Start Free</a>
     </div>
@@ -44,7 +48,7 @@ function injectFooter() {
     <div class="container">
       <div class="footer-grid">
         <div class="footer-brand">
-          <a href="../index.html" class="logo">OXY<span>CORP</span></a>
+          <a href="index 1.0.html" class="logo">OXY<span>CORP</span></a>
           <p class="footer-desc">Empowering musicians to build sustainable, fulfilling careers through expert guidance and community.</p>
         </div>
         <div class="footer-col">
