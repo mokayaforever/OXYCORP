@@ -37,3 +37,25 @@ class UserMetricsUpload(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.platform} ({self.uploaded_at})"
+
+class Track(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='tracks', null=True, blank=True)
+    track_id = models.CharField(max_length=20, unique=True)
+    title = models.CharField(max_length=255)
+    artist = models.CharField(max_length=255)
+    album = models.CharField(max_length=255, blank=True)
+    year = models.IntegerField()
+    genre = models.CharField(max_length=100)
+    sub_genre = models.CharField(max_length=100, blank=True)
+    bpm = models.IntegerField()
+    key = models.CharField(max_length=50, blank=True)
+    duration = models.CharField(max_length=10, blank=True)
+    moods = models.JSONField(default=list)
+    tags = models.TextField(blank=True)
+    audio_file_url = models.URLField(blank=True)
+    cover_art_url = models.URLField(blank=True)
+    streaming_links = models.JSONField(default=dict)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} by {self.artist} ({self.track_id})"

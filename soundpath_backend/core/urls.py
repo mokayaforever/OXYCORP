@@ -5,7 +5,7 @@ from rest_framework import routers
 from apps.users.views import UserViewSet, UserProfileViewSet, login_view, register_view, logout_view, session_view
 from apps.ai_engine.views import CareerAnalysisViewSet, SkillAssessmentViewSet, CareerRoadmapViewSet, MilestoneViewSet
 from apps.communication.views import ChatSessionViewSet, ChatMessageViewSet
-from apps.market.views import MarketDataViewSet, UserMetricsUploadViewSet
+from apps.market.views import MarketDataViewSet, UserMetricsUploadViewSet, TrackViewSet
 from apps.matching.views import CollaborationMatchViewSet
 
 router = routers.DefaultRouter()
@@ -23,6 +23,7 @@ router.register(r'chat-messages', ChatMessageViewSet)
 # Market
 router.register(r'market-data', MarketDataViewSet)
 router.register(r'metrics-uploads', UserMetricsUploadViewSet)
+router.register(r'tracks', TrackViewSet)
 # Matching
 router.register(r'matches', CollaborationMatchViewSet)
 

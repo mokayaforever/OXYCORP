@@ -242,8 +242,8 @@
     .db-stats { display: flex; flex-direction: column; gap: 0.8rem; }
     .db-stat-row { display: flex; justify-content: space-between; align-items: center; padding: 0.7rem 0; border-bottom: 1px solid var(--border); }
     .db-stat-row:last-child { border-bottom: none; }
-    .db-stat-label { font-family: var(--font-m); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
-    .db-stat-val { font-family: var(--font-d); font-size: 1.3rem; font-weight: 700; color: var(--gold); }
+    .db-stat-label { font-family: var(--font-m); font-size: 1.3rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 700; }
+    .db-stat-val { font-family: var(--font-d); font-size: 0.62rem; color: var(--gold); font-weight: 400; }
 
     /* ── TRACK LIBRARY PREVIEW ── */
     .library-preview { margin-top: 5rem; }
@@ -305,7 +305,7 @@
       <div class="container">
         <h1>Add Your <em>Music</em></h1>
         <p style="color:var(--muted);max-width:540px;margin-top:1rem;">
-          Submit your tracks to the SOUNDPATH database. Our AI will analyse your music, tag it intelligently, and make it discoverable to sync supervisors, playlist curators, and industry partners.
+          Submit your tracks to the OXYCORP database. Our AI will analyse your music, tag it intelligently, and make it discoverable to sync supervisors, playlist curators, and industry partners.
         </p>
       </div>
     </section>
@@ -570,7 +570,7 @@
             <!-- ── STEP 4: LINKS ── -->
             <div class="step-panel" id="panel4">
               <p style="color:var(--muted);font-size:0.88rem;line-height:1.8;margin-bottom:2rem;">
-                Add your streaming links so sync supervisors, curators, and AI matching can verify and feature your track across the SOUNDPATH network.
+                Add your streaming links so sync supervisors, curators, and AI matching can verify and feature your track across the OXYCORP network.
               </p>
 
               <div id="linksContainer">
@@ -619,7 +619,7 @@
 
             <!-- ── STEP 5: REVIEW ── -->
             <div class="step-panel" id="panel5">
-              <p style="color:var(--muted);font-size:0.88rem;margin-bottom:1.8rem;">Review your submission before adding it to the SOUNDPATH database.</p>
+              <p style="color:var(--muted);font-size:0.88rem;margin-bottom:1.8rem;">Review your submission before adding it to the OXYCORP database.</p>
 
               <div class="review-grid">
                 <div class="review-cover" id="reviewCover">🎵<img id="reviewCoverImg" alt="" /></div>
@@ -642,12 +642,12 @@
 
               <label class="terms-check">
                 <input type="checkbox" id="termsCheck" />
-                <p>I confirm that I am the rights holder or have the legal authority to submit this track. I agree to the <a href="#">SOUNDPATH Terms of Service</a> and <a href="#">Content Policy</a>, and grant SOUNDPATH a non-exclusive licence to display and promote this track within the platform.</p>
+                <p>I confirm that I am the rights holder or have the legal authority to submit this track. I agree to the <a href="#">OXYCORP Terms of Service</a> and <a href="#">Content Policy</a>, and grant OXYCORP a non-exclusive licence to display and promote this track within the platform.</p>
               </label>
 
               <label class="terms-check">
                 <input type="checkbox" id="aiCheck" />
-                <p>I consent to SOUNDPATH's AI and ML systems analysing this track for genre tagging, mood detection, sync matching, and career intelligence recommendations.</p>
+                <p>I consent to OXYCORP's AI and ML systems analysing this track for genre tagging, mood detection, sync matching, and career intelligence recommendations.</p>
               </label>
 
               <div class="form-nav">
@@ -662,8 +662,8 @@
             <div class="success-panel" id="successPanel">
               <div class="success-icon">✓</div>
               <h2 class="success-title">Track <em>Submitted!</em></h2>
-              <p class="success-sub">Your music has been added to the SOUNDPATH database. Our AI is now analysing your track for mood, tempo, genre tags, and sync compatibility.</p>
-              <div class="track-id-badge" id="trackIdBadge">Track ID: SP-XXXXXXXX</div>
+              <p class="success-sub">Your music has been added to the OXYCORP database. Our AI is now analysing your track for mood, tempo, genre tags, and sync compatibility.</p>
+              <div class="track-id-badge" id="trackIdBadge">Track ID: OC-XXXXXXXX</div>
               <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
                 <button class="btn btn-primary btn-lg" onclick="submitAnother()">+ Submit Another Track</button>
                 <a href="advisor.html" class="btn btn-teal btn-lg">Talk to AI Advisor</a>
@@ -682,52 +682,41 @@
               <li>Automated genre & mood tagging by ML engine</li>
               <li>Discoverable by playlist curators worldwide</li>
               <li>Career score boost from verified track count</li>
-              <li>Included in SOUNDPATH's industry pitch reports</li>
+              <li>Included in OXYCORP's industry pitch reports</li>
               <li>Free to submit — no hidden fees</li>
             </ul>
           </div>
 
           <div class="info-card">
-            <h4>Database Stats</h4>
+            <h4>Nearby Studios</h4>
             <div class="db-stats">
               <div class="db-stat-row">
-                <span class="db-stat-label">Tracks Submitted</span>
-                <span class="db-stat-val" id="trackCount">—</span>
+                <span class="db-stat-label">Syokimau Audio Lab</span>
+                <span class="db-stat-val">Syokimau, Nairobi</span>
               </div>
               <div class="db-stat-row">
-                <span class="db-stat-label">Artists in DB</span>
-                <span class="db-stat-val">12,847</span>
+                <span class="db-stat-label">MetroBeat Studios</span>
+                <span class="db-stat-val">Mlolongo, Machakos Rd</span>
               </div>
               <div class="db-stat-row">
-                <span class="db-stat-label">Active Sync Briefs</span>
-                <span class="db-stat-val">318</span>
+                <span class="db-stat-label">Nairobi SoundHouse</span>
+                <span class="db-stat-val">Embakasi South</span>
               </div>
               <div class="db-stat-row">
-                <span class="db-stat-label">Genres Covered</span>
-                <span class="db-stat-val">64</span>
+                <span class="db-stat-label">Pipeline Creative Hub</span>
+                <span class="db-stat-val">Pipeline Rd, Nairobi</span>
               </div>
             </div>
           </div>
 
-          <div class="info-card" style="background:linear-gradient(135deg,var(--surface),rgba(29,228,180,0.04));border-color:var(--border2);">
-            <h4>AI Analysis Includes</h4>
-            <ul class="info-list">
-              <li>Auto genre & sub-genre detection</li>
-              <li>Mood classification (12 categories)</li>
-              <li>BPM & key detection</li>
-              <li>Sync suitability score</li>
-              <li>Similar artist matching</li>
-              <li>Playlist fit prediction</li>
-            </ul>
-          </div>
         </aside>
       </div><!-- /submit-layout -->
 
       <!-- TRACK LIBRARY PREVIEW -->
       <div class="library-preview">
-        <div class="sec-label">Database Preview</div>
-        <h2 style="margin-bottom:0.5rem;">Recently Added <em>Tracks</em></h2>
-        <p style="color:var(--muted);margin-bottom:2rem;max-width:500px;">Explore tracks already in the OXYCORP database — discoverable by curators, sync supervisors, and AI matching.</p>
+        <div class="sec-label">Track Database</div>
+        <h2 style="margin-bottom:0.5rem;">Submitted <em>Tracks</em></h2>
+        <p style="color:var(--muted);margin-bottom:2rem;max-width:500px;">This is the OXYCORP submission database. It will show the tracks you add through the submit page once they are saved.</p>
 
         <div class="library-controls">
           <div class="search-wrap">
@@ -769,7 +758,11 @@
         if (progress === 1) clearInterval(timer);
       }, 16);
     }
-    animateCount(document.getElementById('trackCount'), 48213);
+    function updateTrackCount() {
+      const count = JSON.parse(localStorage.getItem('oxycorp_db') || '[]').length;
+      document.getElementById('trackCount').textContent = count.toLocaleString();
+    }
+    updateTrackCount();
 
     // ── Step navigation ──
     function updateStepUI() {
@@ -936,33 +929,47 @@
       btn.textContent = '⏳ Submitting…';
       btn.disabled = true;
 
-      // Simulate API submission (POST to /api/submit-track in production)
-      setTimeout(() => {
-        const trackId = 'SP-' + Math.random().toString(36).substr(2, 8).toUpperCase();
-        document.getElementById('trackIdBadge').textContent = 'Track ID: ' + trackId;
+      // Prepare FormData for API submission
+      const formData = new FormData();
+      formData.append('title', document.getElementById('trackTitle').value || 'Untitled');
+      formData.append('artist', document.getElementById('artistName').value || 'Unknown Artist');
+      formData.append('album', document.getElementById('albumName').value || '');
+      formData.append('year', document.getElementById('releaseYear').value || 2025);
+      formData.append('genre', selectedGenre || 'Pop');
+      formData.append('sub_genre', document.getElementById('subGenre').value || '');
+      formData.append('bpm', document.getElementById('bpmSlider').value || 120);
+      formData.append('key', document.getElementById('musicalKey').value || '');
+      formData.append('duration', document.getElementById('duration').value || '');
+      formData.append('moods', JSON.stringify(selectedMoods));
+      formData.append('tags', document.getElementById('tags').value || '');
+      formData.append('streaming_links', JSON.stringify({})); // Placeholder
 
-        // Save to localStorage as demo database
-        const entry = {
-          id: trackId,
-          title: document.getElementById('trackTitle').value || 'Untitled',
-          artist: document.getElementById('artistName').value || 'Unknown Artist',
-          genre: selectedGenre || 'Pop',
-          bpm: document.getElementById('bpmSlider').value,
-          key: document.getElementById('musicalKey').value,
-          moods: selectedMoods,
-          year: document.getElementById('releaseYear').value,
-          submittedAt: new Date().toISOString(),
-        };
-        const db = JSON.parse(localStorage.getItem('soundpath_db') || '[]');
-        db.unshift(entry);
-        localStorage.setItem('soundpath_db', JSON.stringify(db));
+      // Add files
+      const audioFile = document.getElementById('audioFile').files[0];
+      if (audioFile) formData.append('audio_file', audioFile);
 
-        // Show success
+      const coverFile = document.getElementById('coverFile').files[0];
+      if (coverFile) formData.append('cover_file', coverFile);
+
+      // Submit to API
+      fetch('http://localhost:8000/api/tracks/submit/', {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('trackIdBadge').textContent = 'Track ID: ' + data.track_id;
         document.getElementById('panel5').style.display = 'none';
         document.getElementById('stepProgress').style.opacity = '0.4';
         document.getElementById('successPanel').classList.add('show');
         buildLibrary();
-      }, 1800);
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Submission failed. Check console for details.');
+        btn.textContent = '⚡ Add to Database';
+        btn.disabled = false;
+      });
     }
 
     function submitAnother() {
@@ -978,22 +985,15 @@
     }
 
     // ── Library ──
-    const SEED_TRACKS = [
-      { id:'SP-A1B2C3D4', title:'Golden Hour', artist:'Nova Echo', genre:'Afrobeats', bpm:102, key:'A Minor', moods:['Uplifting','Romantic'], year:2025, submittedAt: new Date(Date.now()-86400000*1).toISOString() },
-      { id:'SP-E5F6G7H8', title:'Lagos Nights', artist:'DJ Kofi', genre:'Amapiano', bpm:112, key:'C Major', moods:['Party','Energetic'], year:2025, submittedAt: new Date(Date.now()-86400000*2).toISOString() },
-      { id:'SP-I9J0K1L2', title:'Skyline (feat. Zara)', artist:'Meridian', genre:'R&B / Soul', bpm:78, key:'F# Minor', moods:['Melancholic','Chill'], year:2024, submittedAt: new Date(Date.now()-86400000*3).toISOString() },
-      { id:'SP-M3N4O5P6', title:'Override', artist:'VRTX', genre:'Electronic / EDM', bpm:138, key:'E Minor', moods:['Energetic','Futuristic'], year:2025, submittedAt: new Date(Date.now()-86400000*4).toISOString() },
-      { id:'SP-Q7R8S9T0', title:'Mama Said', artist:'Ade & The Boys', genre:'Hip-Hop / Rap', bpm:88, key:'G Minor', moods:['Motivational'], year:2025, submittedAt: new Date(Date.now()-86400000*5).toISOString() },
-      { id:'SP-U1V2W3X4', title:'Breathe Easy', artist:'Serene', genre:'Indie / Alternative', bpm:95, key:'D Major', moods:['Chill','Meditative'], year:2024, submittedAt: new Date(Date.now()-86400000*6).toISOString() },
-    ];
     const GENRE_EMOJIS = { 'Afrobeats':'🌍','Amapiano':'🎷','Hip-Hop / Rap':'🎤','R&B / Soul':'❤️','Electronic / EDM':'⚡','Indie / Alternative':'🎸','Pop':'⭐','Jazz':'🎺','Gospel / CCM':'✝️','Classical':'🎻','Reggae':'🌴','Latin':'💃','Default':'🎵' };
 
     let allTracks = [];
     let playingId = null;
 
     function getAllTracks() {
-      const userTracks = JSON.parse(localStorage.getItem('soundpath_db') || '[]');
-      return [...userTracks, ...SEED_TRACKS];
+      // In production, fetch from API: fetch('/api/tracks/')
+      // For demo, use localStorage
+      return JSON.parse(localStorage.getItem('oxycorp_db') || '[]');
     }
 
     function buildLibrary(filter = '', sort = 'recent') {
@@ -1007,8 +1007,12 @@
       if (sort === 'bpm-desc') tracks.sort((a,b) => b.bpm - a.bpm);
       if (sort === 'az') tracks.sort((a,b) => a.title.localeCompare(b.title));
 
+      updateTrackCount();
       const el = document.getElementById('trackLibrary');
-      if (!tracks.length) { el.innerHTML = '<p style="color:var(--muted);padding:2rem 0;text-align:center;font-family:var(--font-m);font-size:0.75rem;letter-spacing:0.1em;">NO TRACKS FOUND</p>'; return; }
+      if (!tracks.length) {
+        el.innerHTML = '<p style="color:var(--muted);padding:2rem 0;text-align:center;font-family:var(--font-m);font-size:0.75rem;letter-spacing:0.1em;">No tracks have been added yet. Submit your first OXYCORP track to populate the library.</p>';
+        return;
+      }
 
       el.innerHTML = tracks.map((t, i) => {
         const icon = GENRE_EMOJIS[t.genre] || GENRE_EMOJIS['Default'];

@@ -304,13 +304,27 @@ User: "How do I mix vocals in Ableton?" → Answer with production advice.`;
     let messages = [];
     const chatEl = document.getElementById('chatMessages');
 
+    function renderMarkdown(text) {
+      return text
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>')
+        .replace(/^- (.+)/gm, '<li>$1</li>')
+        .replace(/^(\d+)\. (.+)/gm, '<li>$2</li>')
+        .replace(/\n\n/g, '</p><p>')
+        .replace(/\n/g, '<br>')
+        .replace(/\|(.+)\|/g, (m) => {
+          return '<span style="color:var(--muted);font-size:0.85em;">' + m + '</span>';
+        });
+    }
+
     function appendMsg(role, content) {
       const div = document.createElement('div');
       div.className = `chat-msg ${role}`;
       const isAI = role === 'assistant';
+      const rendered = isAI ? renderMarkdown(content) : content.replace(/\n/g, '<br>');
       div.innerHTML = `
         <div class="chat-avatar ${isAI ? 'av-ai' : 'av-user'}">${isAI ? 'AI' : 'You'}</div>
-        <div class="chat-bubble">${content.replace(/\n/g, '<br>')}</div>
+        <div class="chat-bubble"><p>${rendered}</p></div>
       `;
       chatEl.appendChild(div);
       chatEl.scrollTop = chatEl.scrollHeight;
@@ -323,7 +337,10 @@ User: "How do I mix vocals in Ableton?" → Answer with production advice.`;
       div.id = 'typingIndicator';
       div.innerHTML = `
         <div class="chat-avatar av-ai">AI</div>
-        <div class="chat-bubble"><div class="typing"><span></span><span></span><span></span></div></div>
+        <div class="chat-bubble">
+          <div class="typing"><span></span><span></span><span></span></div>
+          <div style="font-size:0.7rem;color:var(--muted);margin-top:0.4rem;font-family:var(--font-m);letter-spacing:0.05em;">Searching web & knowledge base…</div>
+        </div>
       `;
       chatEl.appendChild(div);
       chatEl.scrollTop = chatEl.scrollHeight;
@@ -377,7 +394,20 @@ User: "How do I mix vocals in Ableton?" → Answer with production advice.`;
           const data = await response.json();
           const reply = data.reply;
           messages.push({ role: 'assistant', content: reply });
-          appendMsg('assistant', reply);
+          const msgEl = appendMsg('assistant', reply);
+
+          // Show source badge
+          if (data.source || data.webResults) {
+            const badge = document.createElement('div');
+            badge.style.cssText = 'font-size:0.6rem;color:var(--muted);margin-top:0.5rem;font-family:var(--font-m);letter-spacing:0.06em;text-transform:uppercase;display:flex;align-items:center;gap:0.4rem;';
+            let sourceText = '';
+            if (data.source === 'llm') sourceText = '🧠 AI Model';
+            else if (data.source === 'knowledge-base+web') sourceText = '📡 Knowledge Base + Web Research';
+            else if (data.source === 'knowledge-base') sourceText = '📚 Knowledge Base';
+            if (data.webResults > 0) sourceText += ` · ${data.webResults} web sources`;
+            badge.textContent = sourceText;
+            msgEl.querySelector('.chat-bubble')?.appendChild(badge);
+          }
         } else {
           // Fallback demo response
           const fallback = getDemoReply(text);
@@ -395,20 +425,11 @@ User: "How do I mix vocals in Ableton?" → Answer with production advice.`;
     }
 
     function getDemoReply(q) {
-      const q_lower = q.toLowerCase();
-
-      // Music gate — refuse non-music questions in fallback mode too
+      // This is only used as an absolute last resort if the server is completely unreachable
       if (!isMusicRelatedClient(q)) {
         return MUSIC_REFUSAL_CLIENT;
       }
-
-      if (q_lower.includes('spotify') || q_lower.includes('stream')) {
-        return `Great question about Spotify growth! Here's what the data tells us:\n\n**1. Playlist Placement is King:** Getting onto editorial playlists (like Release Radar or Discover Weekly) can multiply your streams by 10–50x. Submit your tracks via Spotify for Artists at least 7 days before release.\n\n**2. Release Cadence:** Artists releasing every 4–6 weeks see 3× more algorithm pushes than those releasing quarterly. Singles outperform albums for discovery.\n\n**3. Pre-Save Campaigns:** Build pre-save momentum using tools like SubmitHub, ToneDen, or Hypeddit. Aim for 200+ pre-saves before release day.\n\n**4. Cross-Platform Funnels:** TikTok → Spotify is the highest-converting funnel right now. Even 15-second clips drive meaningful Spotify follow-through.\n\nWhat genre are you working in? That'll help me give you more targeted playlist pitch strategies.`;
-      }
-      if (q_lower.includes('fanbase') || q_lower.includes('fans')) {
-        return `Building your first 1,000 true fans is the most critical phase of any music career. Here's a data-driven approach:\n\n**The 1,000 True Fans Framework:** You don't need millions of listeners — you need 1,000 people who'll buy every release, attend every show, and share your music. Focus on depth over breadth.\n\n**Platform Strategy (2025):**\n- TikTok: highest organic reach for music (post 3–5x/week)\n- Instagram Reels: essential for visual branding\n- YouTube Shorts: builds long-tail discoverability\n- Discord or Patreon: convert followers to community members\n\n**The Email List:** Still the highest-ROI channel. Offer a free download or exclusive content in exchange for email sign-ups. Even 500 engaged emails beats 10,000 passive followers.\n\nWhat's your current social media presence? I can build a specific 90-day growth plan for you.`;
-      }
-      return `That's an excellent music career question. Based on current music industry data and trends, here's my analysis:\n\n**Strategic Overview:** The music industry has fundamentally shifted toward an artist-as-entrepreneur model. Understanding both the creative and business dimensions of your career is essential for sustainable success.\n\n**Key Considerations:**\n1. Your career stage determines which actions will have the highest ROI\n2. Genre and target market significantly influence the right distribution, marketing, and revenue strategies\n3. Building direct-to-fan relationships is consistently the highest-value long-term investment\n\n**AI & ML Insight:** Our machine learning models show that artists who diversify revenue streams early (streaming + live + sync + merch) have 4× higher 5-year career survival rates.\n\nTo give you more personalised advice, what's your current career stage — emerging, developing, or established? And what's your primary genre?`;
+      return `That's a great music career question! I'm currently having trouble connecting to the server for a detailed response.\n\nIn the meantime, try these OXYCORP tools for immediate insights:\n• **Career Analysis** — Get a data-driven career score\n• **Skill Assessment** — Identify your skill gaps\n• **Market Intelligence** — See live genre trends\n• **AI Roadmap** — Generate a personalised career plan\n\nPlease try your question again in a moment — the AI advisor will be back with a comprehensive answer.`;
     }
 
     function sendQuick(btn, msg) {
