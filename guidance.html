@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OXYCORP — Career Guidance</title>
+  <link rel="stylesheet" href="global.css" />
+  <style>
+    .guidance-hero { padding: 7rem 0 3rem; }
+    .guidance-hero h1 { font-family: var(--font-d); font-size: 2.8rem; font-weight: 700; }
+    .guidance-hero p { color: var(--muted); max-width: 560px; margin-top: 1rem; line-height: 1.7; }
+
+    .guidance-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 2.5rem; }
+
+    /* Assessment form */
+    .assess-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 2rem; position: relative; overflow: hidden;
+    }
+    .assess-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+      background: linear-gradient(90deg, var(--primary), #60A5FA);
+    }
+    .assess-title { font-family: var(--font-d); font-size: 1.3rem; font-weight: 600; margin-bottom: 0.3rem; }
+    .assess-sub { color: var(--muted); font-size: 0.82rem; margin-bottom: 1.8rem; }
+
+    .form-group { margin-bottom: 1.2rem; }
+    .form-group label {
+      display: block; font-family: var(--font-m); font-size: 0.68rem;
+      text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted);
+      margin-bottom: 0.4rem;
+    }
+    .form-group select, .form-group input, .form-group textarea {
+      width: 100%; padding: 0.7rem 0.9rem; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: var(--r);
+      font-size: 0.88rem; color: var(--text); font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    .form-group select:focus, .form-group input:focus, .form-group textarea:focus {
+      outline: none; border-color: var(--primary);
+    }
+    .form-group textarea { resize: vertical; min-height: 80px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    /* Steps indicator */
+    .steps { display: flex; gap: 0; margin-bottom: 2rem; }
+    .step {
+      flex: 1; text-align: center; padding: 0.6rem 0.5rem;
+      font-family: var(--font-m); font-size: 0.6rem; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--muted);
+      border-bottom: 3px solid var(--border); transition: all 0.3s;
+    }
+    .step.active { color: var(--primary); border-color: var(--primary); }
+    .step.done { color: var(--teal); border-color: var(--teal); }
+
+    /* Right sidebar cards */
+    .side-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 1.5rem; margin-bottom: 1.5rem;
+    }
+    .side-card__title { font-family: var(--font-d); font-size: 1.1rem; font-weight: 600; margin-bottom: 0.8rem; }
+    .side-card__item {
+      display: flex; align-items: flex-start; gap: 0.8rem;
+      padding: 0.7rem 0; border-bottom: 1px solid var(--border);
+    }
+    .side-card__item:last-child { border-bottom: none; }
+    .side-card__icon { font-size: 1.3rem; margin-top: 0.1rem; }
+    .side-card__text strong { display: block; font-size: 0.88rem; margin-bottom: 0.15rem; }
+    .side-card__text p { color: var(--muted); font-size: 0.78rem; line-height: 1.5; margin: 0; }
+
+    /* Result card */
+    .result-card {
+      background: linear-gradient(135deg, var(--surface), rgba(37,99,235,0.04));
+      border: 1px solid rgba(37,99,235,0.2); border-radius: var(--r);
+      padding: 2rem; display: none;
+    }
+    .result-card.visible { display: block; animation: fadeUp 0.4s ease; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    .result-title { font-family: var(--font-d); font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem; }
+    .result-section { margin-bottom: 1.2rem; }
+    .result-section h4 { font-size: 0.9rem; font-weight: 600; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.5rem; }
+    .result-section p, .result-section li { color: var(--muted); font-size: 0.85rem; line-height: 1.7; }
+    .result-section ul { padding-left: 1.2rem; }
+
+    .matched-coach {
+      display: flex; align-items: center; gap: 1rem; padding: 1rem;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--r); margin-top: 0.8rem;
+    }
+    .matched-coach__avatar {
+      width: 48px; height: 48px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-m); font-size: 0.8rem; font-weight: 700; color: #fff;
+    }
+
+    @media (max-width: 900px) {
+      .guidance-grid { grid-template-columns: 1fr; }
+      .guidance-hero h1 { font-size: 2rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <section class="guidance-hero">
+      <div class="container">
+        <h1>Career <em>Guidance</em></h1>
+        <p>Tell us about your music journey and goals. Our AI guidance engine will analyze your profile and deliver a personalized career roadmap with actionable next steps.</p>
+      </div>
+    </section>
+
+    <div class="container" style="padding-bottom:6rem;">
+      <div class="guidance-grid">
+        <div>
+          <!-- Assessment Form -->
+          <div class="assess-card" id="assessCard">
+            <div class="steps">
+              <div class="step active" id="step1">1. Your Music</div>
+              <div class="step" id="step2">2. Your Goals</div>
+              <div class="step" id="step3">3. Your Roadmap</div>
+            </div>
+
+            <!-- Step 1 -->
+            <div id="panel1">
+              <div class="assess-title">Tell Us About Your Music</div>
+              <div class="assess-sub">This helps us match you with the right guidance and coaches.</div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Primary Genre</label>
+                  <select id="g-genre">
+                    <option value="">Select your genre</option>
+                    <option>Afrobeats</option><option>Amapiano</option>
+                    <option>Hip-Hop / Rap</option><option>R&B / Soul</option>
+                    <option>Pop</option><option>Electronic / EDM</option>
+                    <option>Jazz</option><option>Classical</option>
+                    <option>Gospel</option><option>Latin</option>
+                    <option>Rock</option><option>Indie / Alternative</option>
+                    <option>Country</option><option>Reggae / Dancehall</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Experience Level</label>
+                  <select id="g-level">
+                    <option value="">Select your level</option>
+                    <option value="beginner">Beginner (0-2 years)</option>
+                    <option value="intermediate">Intermediate (2-5 years)</option>
+                    <option value="advanced">Advanced (5+ years)</option>
+                    <option value="professional">Professional / Full-time</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Your Role</label>
+                  <select id="g-role">
+                    <option value="">Select your role</option>
+                    <option>Singer / Vocalist</option>
+                    <option>Producer / Beatmaker</option>
+                    <option>Songwriter</option>
+                    <option>Instrumentalist</option>
+                    <option>DJ</option>
+                    <option>Multi-instrumentalist</option>
+                    <option>Band / Group</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label>Current Monthly Streams</label>
+                  <select id="g-streams">
+                    <option value="">Select range</option>
+                    <option value="0">Not yet streaming</option>
+                    <option value="100">Under 1,000</option>
+                    <option value="5000">1,000 – 10,000</option>
+                    <option value="50000">10,000 – 100,000</option>
+                    <option value="500000">100,000+</option>
+                  </select>
+                </div>
+              </div>
+              <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:0.5rem;" onclick="nextStep(2)">Continue → Your Goals</button>
+            </div>
+
+            <!-- Step 2 -->
+            <div id="panel2" style="display:none;">
+              <div class="assess-title">What Are Your Goals?</div>
+              <div class="assess-sub">Select what matters most to you right now.</div>
+              <div class="form-group">
+                <label>Primary Career Goal</label>
+                <select id="g-goal">
+                  <option value="">Select your main goal</option>
+                  <option>Grow my streaming numbers</option>
+                  <option>Get sync licensing placements</option>
+                  <option>Build a loyal fanbase</option>
+                  <option>Start touring / gigging</option>
+                  <option>Improve my production skills</option>
+                  <option>Get signed to a label</option>
+                  <option>Monetize my music independently</option>
+                  <option>Find collaborators</option>
+                  <option>Learn music business fundamentals</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Biggest Challenge Right Now</label>
+                <select id="g-challenge">
+                  <option value="">Select your challenge</option>
+                  <option>I don't know where to start</option>
+                  <option>Not getting enough streams</option>
+                  <option>Can't afford quality production</option>
+                  <option>Don't understand the business side</option>
+                  <option>Struggling with marketing</option>
+                  <option>Can't find the right team</option>
+                  <option>Burnout / motivation</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Anything else you'd like guidance on? (optional)</label>
+                <textarea id="g-extra" placeholder="E.g. I want to get my music into Netflix shows, or I want to grow on TikTok..."></textarea>
+              </div>
+              <div style="display:flex;gap:0.8rem;margin-top:0.5rem;">
+                <button class="btn" style="flex:1;justify-content:center;border:1px solid var(--border);background:var(--surface2);" onclick="nextStep(1)">← Back</button>
+                <button class="btn btn-primary" style="flex:2;justify-content:center;" onclick="submitAssessment()">Get My Guidance →</button>
+              </div>
+            </div>
+
+            <!-- Step 3: Loading -->
+            <div id="panel3" style="display:none;">
+              <div style="text-align:center;padding:3rem 1rem;">
+                <div style="font-size:2.5rem;margin-bottom:1rem;">🎵</div>
+                <div class="assess-title" style="text-align:center;">Analyzing Your Profile</div>
+                <div class="assess-sub" style="text-align:center;">Searching our knowledge base and matching you with the right coach…</div>
+                <div style="margin-top:1.5rem;"><div class="typing"><span></span><span></span><span></span></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Results -->
+          <div class="result-card" id="resultCard" style="margin-top:1.5rem;"></div>
+        </div>
+
+        <!-- Sidebar -->
+        <div>
+          <div class="side-card">
+            <div class="side-card__title">How It Works</div>
+            <div class="side-card__item">
+              <div class="side-card__icon">📋</div>
+              <div class="side-card__text">
+                <strong>1. Assess</strong>
+                <p>Tell us your genre, level, goals, and challenges.</p>
+              </div>
+            </div>
+            <div class="side-card__item">
+              <div class="side-card__icon">🧠</div>
+              <div class="side-card__text">
+                <strong>2. Analyze</strong>
+                <p>Our AI engine evaluates your profile against industry data.</p>
+              </div>
+            </div>
+            <div class="side-card__item">
+              <div class="side-card__icon">🗺️</div>
+              <div class="side-card__text">
+                <strong>3. Roadmap</strong>
+                <p>Receive personalized action steps and a matched coach.</p>
+              </div>
+            </div>
+            <div class="side-card__item">
+              <div class="side-card__icon">🚀</div>
+              <div class="side-card__text">
+                <strong>4. Grow</strong>
+                <p>Execute your plan, track milestones, and level up.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="side-card" style="background:linear-gradient(135deg,var(--surface),rgba(37,99,235,0.04));border-color:rgba(37,99,235,0.15);">
+            <div class="side-card__title">💡 Quick Links</div>
+            <a href="advisor.html" style="display:block;padding:0.6rem 0;color:var(--primary);font-size:0.85rem;text-decoration:none;border-bottom:1px solid var(--border);">→ AI Music Advisor (free chat)</a>
+            <a href="coaches.html" style="display:block;padding:0.6rem 0;color:var(--primary);font-size:0.85rem;text-decoration:none;border-bottom:1px solid var(--border);">→ Browse All Coaches</a>
+            <a href="career-analysis.html" style="display:block;padding:0.6rem 0;color:var(--primary);font-size:0.85rem;text-decoration:none;border-bottom:1px solid var(--border);">→ Career Score Analysis</a>
+            <a href="market-intelligence.html" style="display:block;padding:0.6rem 0;color:var(--primary);font-size:0.85rem;text-decoration:none;">→ Live Market Intelligence</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    let coachesData = [];
+
+    async function init() {
+      try { coachesData = await (await fetch('/api/coaches')).json(); } catch(e) {}
+    }
+
+    function nextStep(step) {
+      document.querySelectorAll('[id^="panel"]').forEach(p => p.style.display = 'none');
+      document.getElementById('panel' + step).style.display = 'block';
+      document.querySelectorAll('.step').forEach((s, i) => {
+        s.classList.remove('active', 'done');
+        if (i + 1 < step) s.classList.add('done');
+        if (i + 1 === step) s.classList.add('active');
+      });
+    }
+
+    async function submitAssessment() {
+      const genre = document.getElementById('g-genre').value;
+      const level = document.getElementById('g-level').value;
+      const role = document.getElementById('g-role').value;
+      const streams = document.getElementById('g-streams').value;
+      const goal = document.getElementById('g-goal').value;
+      const challenge = document.getElementById('g-challenge').value;
+      const extra = document.getElementById('g-extra').value;
+
+      if (!genre || !level || !goal) {
+        alert('Please fill in at least your genre, level, and goal.');
+        return;
+      }
+
+      nextStep(3);
+
+      // Call AI advisor for personalized guidance
+      const prompt = `I'm a ${level} ${role || 'musician'} in the ${genre} genre. I currently get ${streams || '0'} monthly streams. My main goal is: ${goal}. My biggest challenge is: ${challenge || 'not specified'}. ${extra ? 'Additional context: ' + extra : ''} Please give me a detailed, personalized career roadmap with specific action steps.`;
+
+      let aiResponse = '';
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: [{ role: 'user', content: prompt }] })
+        });
+        const data = await res.json();
+        aiResponse = data.reply || '';
+      } catch (e) {
+        aiResponse = 'Unable to generate AI guidance at this time. Please try the AI Advisor page for a live consultation.';
+      }
+
+      // Match a coach
+      const genreLower = genre.toLowerCase();
+      const goalLower = goal.toLowerCase();
+      let matchedCoach = coachesData[0];
+      for (const c of coachesData) {
+        const spec = c.specialty.toLowerCase();
+        if (spec.includes('business') && (goalLower.includes('licensing') || goalLower.includes('monetize') || goalLower.includes('label') || goalLower.includes('business'))) { matchedCoach = c; break; }
+        if (spec.includes('vocal') && genreLower.includes('afrobeats')) { matchedCoach = c; break; }
+        if (spec.includes('production') && (goalLower.includes('production') || role === 'Producer / Beatmaker')) { matchedCoach = c; break; }
+        if (spec.includes('performance') && goalLower.includes('touring')) { matchedCoach = c; break; }
+        if (spec.includes('songwriting') && goalLower.includes('collabor')) { matchedCoach = c; break; }
+        if (spec.includes('marketing') && (goalLower.includes('streaming') || goalLower.includes('fanbase'))) { matchedCoach = c; break; }
+        if (spec.includes('management') && goalLower.includes('label')) { matchedCoach = c; break; }
+      }
+
+      // Render results
+      const formattedResponse = aiResponse.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n- /g, '\n• ').replace(/\n\d+\. /g, (m) => '\n' + m.trim() + ' ')
+        .replace(/\n/g, '<br>');
+
+      document.getElementById('resultCard').innerHTML = `
+        <div class="result-title">🗺️ Your Personalized Career Roadmap</div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.2rem;">
+          <span class="tag" style="font-size:0.65rem;">${genre}</span>
+          <span class="tag tag-teal" style="font-size:0.65rem;">${level}</span>
+          <span class="tag tag-gold" style="font-size:0.65rem;">${goal}</span>
+        </div>
+        <div class="result-section">
+          <h4>📋 AI Guidance</h4>
+          <div style="color:var(--muted);font-size:0.85rem;line-height:1.75;">${formattedResponse}</div>
+        </div>
+        <div class="result-section">
+          <h4>🤝 Matched Coach</h4>
+          ${matchedCoach ? `
+          <div class="matched-coach">
+            <div class="matched-coach__avatar" style="background:${matchedCoach.accent_color};">${matchedCoach.image_initial}</div>
+            <div style="flex:1;">
+              <div style="font-weight:600;font-size:0.92rem;">${matchedCoach.name}</div>
+              <div style="font-size:0.75rem;color:var(--primary);">${matchedCoach.specialty}</div>
+              <div style="font-size:0.75rem;color:var(--muted);margin-top:0.2rem;">⭐ ${matchedCoach.rating} · ${matchedCoach.sessions_completed} sessions · KES ${matchedCoach.price_per_session.toLocaleString()}/session</div>
+            </div>
+            <a href="coaches.html" class="btn btn-primary" style="font-size:0.75rem;padding:0.5rem 1rem;">View Profile</a>
+          </div>` : ''}
+        </div>
+        <div style="display:flex;gap:0.8rem;margin-top:1.5rem;">
+          <a href="advisor.html" class="btn btn-primary" style="flex:1;justify-content:center;">Continue with AI Advisor</a>
+          <button class="btn" style="flex:1;justify-content:center;border:1px solid var(--border);background:var(--surface2);" onclick="resetForm()">Start Over</button>
+        </div>
+      `;
+      document.getElementById('resultCard').classList.add('visible');
+      document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function resetForm() {
+      document.getElementById('resultCard').classList.remove('visible');
+      document.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
+      document.getElementById('g-extra').value = '';
+      nextStep(1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.addEventListener('load', init);
+  </script>
+</body>
+</html>

@@ -470,6 +470,14 @@ User: "How do I mix vocals in Ableton?" → Answer with production advice.`;
         </div>`;
       chatEl.appendChild(welcome);
     }
+
+    // Auto-send if opened from an opportunity alert (?topic=...)
+    const urlParams = new URLSearchParams(window.location.search);
+    const topicParam = urlParams.get('topic');
+    if (topicParam) {
+      document.getElementById('chatInput').value = `Tell me more about this opportunity: ${topicParam}`;
+      setTimeout(() => sendMessage(), 500);
+    }
   </script>
 </body>
 </html>
