@@ -8,13 +8,14 @@ function getActivePage() {
 function injectNav() {
   const active = getActivePage();
   const pages = [
-    { href: 'index.html',       label: 'Home',      file: 'index.html' },
-    { href: 'advisor.html',             label: 'AI Advisor',file: 'advisor.html' },
-    { href: 'career-analysis.html',     label: 'Analysis',  file: 'career-analysis.html' },
-    { href: 'skill-assessment.html',    label: 'Skills',    file: 'skill-assessment.html' },
-    { href: 'market-intelligence.html', label: 'Market',    file: 'market-intelligence.html' },
-    { href: 'roadmap.html',             label: 'Roadmap',   file: 'roadmap.html' },
-    { href: 'submit-music.html',        label: 'Submit',    file: 'submit-music.html' },
+    { href: 'index.html',               label: 'Home',       file: 'index.html' },
+    { href: 'advisor.html',             label: 'AI Advisor', file: 'advisor.html' },
+    { href: 'market-intelligence.html', label: 'Market',     file: 'market-intelligence.html' },
+    { href: 'coaches.html',             label: 'Coaches',    file: 'coaches.html' },
+    { href: 'guidance.html',            label: 'Guidance',   file: 'guidance.html' },
+    { href: 'roadmap.html',             label: 'Roadmap',    file: 'roadmap.html' },
+    { href: 'career-analysis.html',     label: 'Analysis',   file: 'career-analysis.html' },
+    { href: 'submit-music.html',        label: 'Submit',     file: 'submit-music.html' },
   ];
 
   const linksHtml = pages.map(p => `
@@ -55,10 +56,13 @@ function injectFooter() {
           <h4>Platform</h4>
           <ul>
             <li><a href="advisor.html">AI Advisor</a></li>
+            <li><a href="market-intelligence.html">Market Intelligence</a></li>
+            <li><a href="coaches.html">Meet Coaches</a></li>
+            <li><a href="guidance.html">Career Guidance</a></li>
             <li><a href="career-analysis.html">Career Analysis</a></li>
-            <li><a href="skill-assessment.html">Skill Assessment</a></li>
-            <li><a href="market-intelligence.html">Market Intel</a></li>
             <li><a href="roadmap.html">Roadmap</a></li>
+            <li><a href="submit-music.html">Submit Music</a></li>
+            <li><a href="coach-dashboard.html">Coach Dashboard</a></li>
           </ul>
         </div>
         <div class="footer-col">

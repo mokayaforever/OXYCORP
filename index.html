@@ -20,11 +20,13 @@
     <span class="logo-text">OXYCORP</span>
   </div>
   <ul class="nav__links">
-    <li><a href="#home" class="nav-link active" data-section="home">Home</a></li>
-    <li><a href="market-intelligence.html"class="nav-link" data-section="market intelligence">Market Intelligence</a></li>
-    <li><a href="roadmap.html" class="nav-link" data-section="roadmap">Roadmap</a></li>
-    <li><a href="career-analysis.html" class="nav-link" data-section="career analysis">Career Analysis</a></li>
-    <li><a href="submit-music.html" class="nav-link" data-section="career analysis">Submit music</a></li> 
+    <li><a href="index.html" class="nav-link active" data-section="home">Home</a></li>
+    <li><a href="market-intelligence.html" class="nav-link">Market Intel</a></li>
+    <li><a href="coaches.html" class="nav-link">Coaches</a></li>
+    <li><a href="guidance.html" class="nav-link">Guidance</a></li>
+    <li><a href="roadmap.html" class="nav-link">Roadmap</a></li>
+    <li><a href="career-analysis.html" class="nav-link">Analysis</a></li>
+    <li><a href="submit-music.html" class="nav-link">Submit</a></li>
   </ul>
   <div class="nav__actions">
     <div id="nav-auth-guest" class="nav__auth">
@@ -43,9 +45,13 @@
 <div class="mobile-menu" id="mobile-menu">
   <a href="index.html" onclick="closeMobile()">Home</a>
   <a href="market-intelligence.html" onclick="closeMobile()">Market Intelligence</a>
+  <a href="coaches.html" onclick="closeMobile()">Meet Coaches</a>
+  <a href="guidance.html" onclick="closeMobile()">Career Guidance</a>
   <a href="roadmap.html" onclick="closeMobile()">Roadmap</a>
   <a href="career-analysis.html" onclick="closeMobile()">Career Analysis</a>
-  <a href="submit-music.html" onclick="closeMobile()">Submit music</a>
+  <a href="submit-music.html" onclick="closeMobile()">Submit Music</a>
+  <a href="coach-dashboard.html" onclick="closeMobile()">Coach Dashboard</a>
+  <a href="advisor.html" onclick="closeMobile()">AI Advisor</a>
   <button class="btn btn--accent mt" onclick="openModal('login');closeMobile()">Sign In</button>
 </div>
 
@@ -183,6 +189,10 @@
       <!-- Loaded by JS -->
       <div class="loading-spinner">Loading coaches...</div>
     </div>
+    <div style="display:flex;gap:1rem;justify-content:center;margin-top:2rem;flex-wrap:wrap;">
+      <a href="coaches.html" class="btn btn--hero" style="text-decoration:none;background:#2563EB;color:#fff;font-size:0.85rem;padding:0.8rem 2rem;border-radius:50px;">Browse All Coaches</a>
+      <a href="coach-dashboard.html" class="btn btn--outline" style="text-decoration:none;color:#fff;border-color:rgba(255,255,255,0.3);font-size:0.85rem;padding:0.8rem 2rem;border-radius:50px;">🎓 Coach Dashboard</a>
+    </div>
   </div>
 </section>
 
@@ -193,6 +203,9 @@
       <span class="section__tag">Career Guidance Engine</span>
       <h2 class="section__title">Get Your Personalized<br/><em>Music Career Roadmap</em></h2>
       <p class="section__sub">Answer a few questions and receive tailored advice, a coach match, and your next action steps.</p>
+      <div style="margin-top:1.5rem;">
+        <a href="roadmap.html" class="btn btn--hero" style="text-decoration:none;display:inline-flex;align-items:center;gap:0.5rem;">🗺️ Get My Roadmap →</a>
+      </div>
     </div>
 
 </section>

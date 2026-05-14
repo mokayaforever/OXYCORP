@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OXYCORP — Coach Dashboard</title>
+  <link rel="stylesheet" href="global.css" />
+  <style>
+    .dash-hero { padding: 7rem 0 2.5rem; }
+    .dash-hero h1 { font-family: var(--font-d); font-size: 2.4rem; font-weight: 700; }
+    .dash-hero p { color: var(--muted); max-width: 520px; margin-top: 0.8rem; line-height: 1.7; }
+
+    .dash-stats {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+      padding: 1.2rem; text-align: center;
+    }
+    .stat-card__icon { font-size: 1.5rem; margin-bottom: 0.3rem; }
+    .stat-card__val { font-family: var(--font-d); font-size: 1.5rem; font-weight: 700; color: var(--gold); }
+    .stat-card__label { font-family: var(--font-m); font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-top: 0.15rem; }
+
+    .filter-bar {
+      display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 2rem;
+      padding: 1rem 1.2rem; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+    }
+    .filter-btn {
+      font-family: var(--font-m); font-size: 0.62rem; text-transform: uppercase;
+      letter-spacing: 0.1em; padding: 0.35rem 0.9rem; border-radius: 2px;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--muted); cursor: pointer; transition: all 0.2s;
+    }
+    .filter-btn:hover, .filter-btn.active { background: rgba(37,99,235,0.08); border-color: rgba(37,99,235,0.3); color: var(--primary); }
+
+    .artists-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.2rem; margin-bottom: 4rem;
+    }
+
+    .artist-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+      overflow: hidden; transition: all 0.3s; cursor: pointer;
+    }
+    .artist-card:hover { border-color: rgba(200,168,75,0.4); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.05); }
+
+    .artist-card__top { padding: 1.5rem 1.5rem 1rem; display: flex; gap: 1rem; align-items: flex-start; }
+    .artist-card__avatar {
+      width: 50px; height: 50px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-m); font-size: 0.85rem; font-weight: 700; color: #fff;
+    }
+    .artist-card__name { font-family: var(--font-d); font-size: 1.05rem; font-weight: 600; }
+    .artist-card__genre { font-family: var(--font-m); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--primary); margin-top: 0.2rem; }
+    .artist-card__bio { padding: 0 1.5rem; color: var(--muted); font-size: 0.82rem; line-height: 1.6; }
+
+    .artist-card__metrics {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; border-top: 1px solid var(--border);
+      margin-top: 1rem; background: var(--surface2);
+    }
+    .metric { padding: 0.7rem 0.6rem; text-align: center; border-right: 1px solid var(--border); }
+    .metric:last-child { border-right: none; }
+    .metric__val { font-family: var(--font-d); font-size: 0.9rem; font-weight: 700; }
+    .metric__label { font-family: var(--font-m); font-size: 0.5rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-top: 0.1rem; }
+
+    .artist-card__actions { display: flex; gap: 0.5rem; padding: 0.8rem 1.2rem; background: var(--surface2); border-top: 1px solid var(--border); }
+    .artist-card__actions .btn { flex: 1; justify-content: center; font-size: 0.72rem; padding: 0.5rem 0.6rem; }
+
+    /* Detail Modal */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
+      z-index: 1000; display: none; align-items: center; justify-content: center; padding: 2rem;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 12px;
+      max-width: 600px; width: 100%; max-height: 85vh; overflow-y: auto; position: relative;
+    }
+    .modal-close {
+      position: absolute; top: 1rem; right: 1rem; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 50%; width: 32px; height: 32px;
+      cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center;
+    }
+
+    @media (max-width: 700px) {
+      .dash-stats { grid-template-columns: 1fr 1fr; }
+      .artists-grid { grid-template-columns: 1fr; }
+      .dash-hero h1 { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <section class="dash-hero">
+      <div class="container">
+        <div style="display:flex;align-items:center;gap:0.6rem;margin-bottom:0.5rem;">
+          <span class="tag tag-gold" style="font-size:0.65rem;">Coach Portal</span>
+        </div>
+        <h1>Upcoming <em>Artists</em></h1>
+        <p>Discover rising Nairobi talent. Review artist profiles, stream counts, goals, and social presence — then connect to coach them.</p>
+      </div>
+    </section>
+
+    <div class="container" style="padding-bottom:6rem;">
+      <div class="dash-stats" id="statsRow"></div>
+
+      <div class="filter-bar">
+        <span style="font-family:var(--font-m);font-size:0.6rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);align-self:center;">Filter:</span>
+        <button class="filter-btn active" data-filter="all">All Artists</button>
+        <button class="filter-btn" data-filter="beginner">Beginners</button>
+        <button class="filter-btn" data-filter="intermediate">Intermediate</button>
+        <button class="filter-btn" data-filter="advanced">Advanced</button>
+      </div>
+
+      <div class="artists-grid" id="artistsGrid">
+        <div style="color:var(--muted);font-size:0.85rem;padding:2rem;">Loading artists…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Artist Detail Modal -->
+  <div class="modal-overlay" id="artistModal" onclick="if(event.target===this)closeModal()">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div id="modalContent" style="padding:2rem;"></div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    let allArtists = [];
+    const genreColors = {
+      'Afrobeats': '#F59E0B', 'Amapiano': '#10B981', 'Gospel': '#8B5CF6',
+      'Hip-Hop / Rap': '#EF4444', 'Jazz': '#0EA5E9', 'R&B / Soul': '#EC4899',
+      'Gengetone': '#F97316', 'Indie / Alternative': '#6366F1', 'Pop': '#2563EB',
+    };
+
+    function getColor(genre) { return genreColors[genre] || '#64748b'; }
+    function getInitials(name) { return name.split(' ').map(w => w[0]).join('').substring(0,2).toUpperCase(); }
+    function formatStreams(n) {
+      if (!n) return '0';
+      if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+      if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+      return n.toString();
+    }
+
+    async function loadArtists() {
+      try {
+        const res = await fetch('/api/artists');
+        allArtists = await res.json();
+      } catch (e) { console.warn('Failed to load artists'); }
+      renderStats();
+      renderArtists(allArtists);
+    }
+
+    function renderStats() {
+      const total = allArtists.length;
+      const genres = new Set(allArtists.map(a => a.genre)).size;
+      const totalStreams = allArtists.reduce((s, a) => s + (a.monthly_streams || 0), 0);
+      const advanced = allArtists.filter(a => a.experience === 'advanced').length;
+      document.getElementById('statsRow').innerHTML = [
+        { icon: '🎤', val: total, label: 'Total Artists' },
+        { icon: '🎵', val: genres, label: 'Genres' },
+        { icon: '📈', val: formatStreams(totalStreams), label: 'Combined Streams' },
+        { icon: '⭐', val: advanced, label: 'Advanced Level' },
+      ].map(s => `
+        <div class="stat-card">
+          <div class="stat-card__icon">${s.icon}</div>
+          <div class="stat-card__val">${s.val}</div>
+          <div class="stat-card__label">${s.label}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderArtists(artists) {
+      const grid = document.getElementById('artistsGrid');
+      if (!artists.length) {
+        grid.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;padding:2rem;grid-column:1/-1;">No artists found.</div>';
+        return;
+      }
+      grid.innerHTML = artists.map(a => {
+        const color = getColor(a.genre);
+        const levelBadge = a.experience === 'advanced' ? 'tag-gold' : a.experience === 'intermediate' ? 'tag-teal' : '';
+        return `
+        <div class="artist-card" onclick="openArtist(${a.id})">
+          <div class="artist-card__top">
+            <div class="artist-card__avatar" style="background:${color};">${getInitials(a.name)}</div>
+            <div>
+              <div class="artist-card__name">${a.name}</div>
+              <div class="artist-card__genre">${a.genre}</div>
+              <div style="display:flex;gap:0.3rem;margin-top:0.35rem;">
+                <span class="tag ${levelBadge}" style="font-size:0.55rem;">${a.experience}</span>
+                ${a.joined ? `<span class="tag" style="font-size:0.55rem;">Joined ${new Date(a.joined).toLocaleDateString('en-GB',{month:'short',year:'numeric'})}</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <div class="artist-card__bio">${(a.bio || '').substring(0, 100)}${(a.bio||'').length > 100 ? '…' : ''}</div>
+          <div class="artist-card__metrics">
+            <div class="metric">
+              <div class="metric__val">${formatStreams(a.monthly_streams)}</div>
+              <div class="metric__label">Monthly Streams</div>
+            </div>
+            <div class="metric">
+              <div class="metric__val">${a.experience === 'advanced' ? '5+' : a.experience === 'intermediate' ? '2-5' : '0-2'}</div>
+              <div class="metric__label">Years Exp</div>
+            </div>
+            <div class="metric">
+              <div class="metric__val">${Object.keys(a.social || {}).length}</div>
+              <div class="metric__label">Socials</div>
+            </div>
+          </div>
+          <div class="artist-card__actions" onclick="event.stopPropagation()">
+            <button class="btn btn-primary" onclick="openArtist(${a.id})">View Profile</button>
+            <a href="advisor.html?topic=${encodeURIComponent('As a coach, help me prepare for a session with ' + a.name + ', a ' + a.experience + ' ' + a.genre + ' artist whose goals are: ' + (a.goals||''))}" class="btn" style="border:1px solid var(--border);background:var(--surface2);">Prepare Session</a>
+          </div>
+        </div>
+      `}).join('');
+    }
+
+    function openArtist(id) {
+      const a = allArtists.find(x => x.id === id);
+      if (!a) return;
+      const color = getColor(a.genre);
+      const socials = a.social ? Object.entries(a.social).map(([k,v]) => `
+        <div style="display:flex;align-items:center;gap:0.5rem;padding:0.4rem 0;">
+          <span style="font-size:0.75rem;font-weight:600;text-transform:capitalize;width:70px;">${k}</span>
+          <span style="font-size:0.82rem;color:var(--primary);">${v}</span>
+        </div>
+      `).join('') : '<div style="color:var(--muted);font-size:0.82rem;">No social links provided.</div>';
+
+      document.getElementById('modalContent').innerHTML = `
+        <div style="display:flex;align-items:center;gap:1.2rem;margin-bottom:1.5rem;">
+          <div style="width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-m);font-size:1.1rem;font-weight:700;color:#fff;background:${color};">${getInitials(a.name)}</div>
+          <div>
+            <div style="font-family:var(--font-d);font-size:1.4rem;font-weight:700;">${a.name}</div>
+            <div style="font-family:var(--font-m);font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--primary);margin-top:0.2rem;">${a.genre} · ${a.experience}</div>
+          </div>
+        </div>
+
+        <p style="color:var(--muted);font-size:0.88rem;line-height:1.75;margin-bottom:1.5rem;">${a.bio || 'No bio provided.'}</p>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.6rem;margin-bottom:1.5rem;">
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:0.8rem;text-align:center;">
+            <div style="font-family:var(--font-d);font-size:1.1rem;font-weight:700;">${formatStreams(a.monthly_streams)}</div>
+            <div style="font-family:var(--font-m);font-size:0.55rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-top:0.15rem;">Monthly Streams</div>
+          </div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:0.8rem;text-align:center;">
+            <div style="font-family:var(--font-d);font-size:1.1rem;font-weight:700;">${a.experience}</div>
+            <div style="font-family:var(--font-m);font-size:0.55rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-top:0.15rem;">Level</div>
+          </div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:0.8rem;text-align:center;">
+            <div style="font-family:var(--font-d);font-size:1.1rem;font-weight:700;">${a.joined ? new Date(a.joined).toLocaleDateString('en-GB',{month:'short',year:'numeric'}) : '—'}</div>
+            <div style="font-family:var(--font-m);font-size:0.55rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-top:0.15rem;">Joined</div>
+          </div>
+        </div>
+
+        ${a.goals ? `
+        <div style="margin-bottom:1.5rem;">
+          <div style="font-family:var(--font-m);font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.5rem;">Goals & Needs</div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;">
+            <p style="color:var(--text);font-size:0.85rem;line-height:1.6;margin:0;">${a.goals}</p>
+          </div>
+        </div>` : ''}
+
+        <div style="margin-bottom:1.5rem;">
+          <div style="font-family:var(--font-m);font-size:0.62rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.5rem;">Social Profiles</div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:0.8rem 1rem;">${socials}</div>
+        </div>
+
+        <div style="display:flex;gap:0.8rem;">
+          <a href="advisor.html?topic=${encodeURIComponent('As a coach, help me create a coaching plan for ' + a.name + '. They are a ' + a.experience + ' ' + a.genre + ' artist. Bio: ' + (a.bio||'') + '. Goals: ' + (a.goals||''))}" class="btn btn-primary" style="flex:1;justify-content:center;">Get Coaching Plan via AI</a>
+          <button class="btn" style="flex:1;justify-content:center;border:1px solid var(--border);background:var(--surface2);" onclick="closeModal()">Close</button>
+        </div>
+      `;
+      document.getElementById('artistModal').classList.add('active');
+    }
+
+    function closeModal() {
+      document.getElementById('artistModal').classList.remove('active');
+    }
+
+    // Filters
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const f = this.dataset.filter;
+        if (f === 'all') return renderArtists(allArtists);
+        renderArtists(allArtists.filter(a => a.experience === f));
+      });
+    });
+
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+    window.addEventListener('load', loadArtists);
+  </script>
+</body>
+</html>
