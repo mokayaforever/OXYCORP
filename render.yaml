@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: oxycorp-app
+    env: docker
+    branch: main
+    plan: free
+    dockerfilePath: Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ML_URL
+        value: http://localhost:8000
+    autoDeploy: true
+    instanceCount: 1
