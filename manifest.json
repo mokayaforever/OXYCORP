@@ -1,0 +1,43 @@
+{
+  "name": "OXYCORP — Music Career Intelligence",
+  "short_name": "OXYCORP",
+  "description": "AI-powered music career guidance, world-class coaches, and live market intelligence for independent artists.",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#191414",
+  "theme_color": "#191414",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["music", "education", "business"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "AI Advisor",
+      "short_name": "Advisor",
+      "description": "Chat with the OXYCORP AI music advisor",
+      "url": "/advisor.html",
+      "icons": [{ "src": "/icon-512.png", "sizes": "512x512" }]
+    },
+    {
+      "name": "Market Intelligence",
+      "short_name": "Market",
+      "description": "Live music market data and trends",
+      "url": "/market-intelligence.html",
+      "icons": [{ "src": "/icon-512.png", "sizes": "512x512" }]
+    },
+    {
+      "name": "Meet Coaches",
+      "short_name": "Coaches",
+      "description": "Browse expert music coaches",
+      "url": "/coaches.html",
+      "icons": [{ "src": "/icon-512.png", "sizes": "512x512" }]
+    }
+  ]
+}

@@ -264,3 +264,103 @@ footer h4, footer .logo { color: #fff; }
   .footer-grid { grid-template-columns: 1fr; }
   .container { padding: 0 1.2rem; }
 }
+
+/* ═══════════════════════════════════════════
+   MOBILE APP (PWA) — Bottom Tab Bar
+═══════════════════════════════════════════ */
+.mobile-tab-bar {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 9990;
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border);
+  padding: 0.4rem 0.5rem;
+  padding-bottom: calc(0.4rem + env(safe-area-inset-bottom, 0px));
+  justify-content: space-around;
+  align-items: center;
+}
+
+.mobile-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  text-decoration: none;
+  color: var(--muted);
+  padding: 0.3rem 0.5rem;
+  border-radius: 10px;
+  transition: all 0.2s;
+  min-width: 56px;
+}
+
+.mobile-tab__icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.mobile-tab__label {
+  font-family: var(--font-b);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.mobile-tab--active {
+  color: var(--green);
+  background: var(--green-dim);
+}
+
+.mobile-tab--active .mobile-tab__label {
+  font-weight: 700;
+}
+
+/* Show tab bar on mobile */
+@media (max-width: 768px) {
+  .mobile-tab-bar {
+    display: flex;
+  }
+
+  /* Add bottom padding to body so content isn't hidden behind tab bar */
+  body {
+    padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Hide footer on mobile for cleaner app feel */
+  footer {
+    margin-bottom: 0;
+  }
+
+  /* Improve touch targets */
+  .btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Full-width cards on mobile */
+  .card {
+    padding: 1.4rem;
+  }
+
+  /* Better mobile typography */
+  h1 { font-size: clamp(1.8rem, 8vw, 2.8rem); }
+  h2 { font-size: clamp(1.4rem, 5vw, 2rem); }
+
+  /* Compact nav for mobile */
+  .nav-inner { height: 52px; padding: 0 1rem; }
+  .nav-badge { font-size: 0.7rem; padding: 0.35rem 0.8rem; }
+}
+
+/* Standalone PWA mode adjustments */
+@media (display-mode: standalone) {
+  .mobile-tab-bar {
+    display: flex;
+  }
+
+  /* Hide desktop nav in standalone mode on mobile */
+  @media (max-width: 768px) {
+    nav .nav-inner .nav-badge { display: none; }
+  }
+}

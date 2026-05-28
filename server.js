@@ -169,12 +169,24 @@ const users = [
   { id: 18, name: 'Frank Jetski', email: 'frank@jetski.ke', password: 'pass123', role: 'musician', genre: 'Hip-Hop / Rap', experience: 'intermediate', bio: 'Kenyan hip-hop artist making waves in the Nairobi rap scene. Featured on "Blinded Na Love" with Biggie Pumba. Known for melodic flows blending Sheng wordplay with trap-influenced production. Building a loyal underground following across East Africa.', monthly_streams: 28500, goals: 'Release debut EP, grow Spotify presence, collaborate with top Kenyan producers', social: { instagram: '@frankjetski', tiktok: '@frankjetski', twitter: '@FrankJetski' }, joined: '2025-06-10' },
   { id: 19, name: 'Biggie Pumba', email: 'biggie@pumba.ke', password: 'pass123', role: 'musician', genre: 'Hip-Hop / Rap', experience: 'advanced', bio: 'Nairobi heavyweight rapper and OXYCORP YouTube channel staple. Known for "Blinded Na Love" and hard-hitting street anthems. Commanding presence with raw lyricism and Sheng bars that resonate across Kenyan estates. Building a movement in East African hip-hop.', monthly_streams: 52000, goals: 'Headline shows, OXYCORP YouTube growth, East African tour, label partnerships', social: { instagram: '@biggiepumba', youtube: 'OXYCORP', tiktok: '@biggiepumba254' }, joined: '2025-03-15' },
   { id: 20, name: 'Lil Morty', email: 'lilmorty@music.ke', password: 'pass123', role: 'musician', genre: 'Hip-Hop / Rap', experience: 'intermediate', bio: 'Rising Nairobi rapper making waves on the OXYCORP YouTube channel. Versatile flow switching between melodic hooks and rapid-fire bars. Part of the new wave of Kenyan trap artists pushing boundaries with genre-bending production and viral music videos.', monthly_streams: 35000, goals: 'Viral music videos, OXYCORP YouTube features, streaming growth, collab with Frank Jetski & Biggie Pumba', social: { instagram: '@lilmorty_ke', youtube: 'OXYCORP', tiktok: '@lilmortyke' }, joined: '2025-05-22' },
+  { id: 21, name: 'Sanaa Njoroge', email: 'sanaa@afro.ke', password: 'pass123', role: 'musician', genre: 'Afro-Pop', experience: 'intermediate', bio: 'Nairobi songwriter and producer blending Afro-Pop with melodic Swahili hooks. Writes for emerging artists and releases self-produced singles with strong social media engagement.', monthly_streams: 19800, goals: 'Collab with regional producers, sync placements, build a strong brand', social: { instagram: '@sanaa_njoroge', tiktok: '@sanaa.afro' }, joined: '2025-09-30' },
 ];
-let nextUserId = 21;
+let nextUserId = 22;
 
 function createSession(user) {
   const sid = Math.random().toString(36).substring(2) + Date.now().toString(36);
-  sessions[sid] = { user: { id: user.id, name: user.name, email: user.email, role: user.role } };
+  const avatar = user.avatar || (user.name ? user.name.charAt(0).toUpperCase() : '♪');
+  sessions[sid] = {
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatar,
+      genre: user.genre || '',
+      experience: user.experience || '',
+    }
+  };
   return sid;
 }
 
@@ -207,7 +219,8 @@ app.post('/api/register', (req, res) => {
   if (users.find(u => u.email === email)) {
     return res.json({ success: false, message: 'Email already registered.' });
   }
-  const user = { id: nextUserId++, name, email, password, role: role || 'musician', genre: genre || '', experience: experience || '' };
+  const avatar = name.trim().charAt(0).toUpperCase();
+  const user = { id: nextUserId++, name, email, password, role: role || 'musician', genre: genre || '', experience: experience || '', avatar };
   users.push(user);
   res.json({ success: true });
 });
@@ -217,6 +230,72 @@ app.post('/api/logout', (req, res) => {
   if (sid) delete sessions[sid];
   res.setHeader('Set-Cookie', 'oxysid=; Path=/; HttpOnly; Max-Age=0');
   res.json({ success: true });
+});
+
+app.get('/api/profile', (req, res) => {
+  const sessionUser = req.session?.user;
+  if (!sessionUser) return res.status(401).json({ success: false, message: 'Authentication required.' });
+
+  const user = users.find(u => u.id === sessionUser.id);
+  if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+
+  return res.json({
+    success: true,
+    profile: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      avatar: user.avatar || (user.name ? user.name.charAt(0).toUpperCase() : '♪'),
+      genre: user.genre || '',
+      experience: user.experience || '',
+    }
+  });
+});
+
+app.post('/api/profile', (req, res) => {
+  const sessionUser = req.session?.user;
+  if (!sessionUser) return res.status(401).json({ success: false, message: 'Authentication required.' });
+
+  const { name, avatar } = req.body;
+  if (!name || typeof name !== 'string' || !name.trim()) {
+    return res.status(400).json({ success: false, message: 'Name is required.' });
+  }
+
+  const user = users.find(u => u.id === sessionUser.id);
+  if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+
+  user.name = name.trim();
+  user.avatar = avatar && typeof avatar === 'string' ? avatar.trim().substring(0, 2) : user.avatar || name.trim().charAt(0).toUpperCase();
+
+  req.session.user.name = user.name;
+  req.session.user.avatar = user.avatar;
+
+  return res.json({ success: true, profile: { name: user.name, avatar: user.avatar } });
+});
+
+app.post('/api/change-password', (req, res) => {
+  const sessionUser = req.session?.user;
+  if (!sessionUser) return res.status(401).json({ success: false, message: 'Authentication required.' });
+
+  const { current_password, new_password, confirm_password } = req.body;
+  if (!current_password || !new_password || !confirm_password) {
+    return res.status(400).json({ success: false, message: 'All password fields are required.' });
+  }
+  if (new_password.length < 6) {
+    return res.status(400).json({ success: false, message: 'New password must be at least 6 characters.' });
+  }
+  if (new_password !== confirm_password) {
+    return res.status(400).json({ success: false, message: 'New password and confirmation must match.' });
+  }
+
+  const user = users.find(u => u.id === sessionUser.id);
+  if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+  if (user.password !== current_password) {
+    return res.status(400).json({ success: false, message: 'Current password is incorrect.' });
+  }
+
+  user.password = new_password;
+  return res.json({ success: true, message: 'Password updated successfully.' });
 });
 
 // ────────────────────────────────────────────
@@ -243,10 +322,74 @@ const coaches = [
   { id: 18, name: 'Samuel Kipchoge', specialty: 'Benga & Traditional Fusion', experience_years: 16, rating: 4.9, bio: 'Legendary Benga guitarist and ethnomusicologist based in Nairobi. Teaches traditional Kenyan instrumentation, Benga guitar techniques, and how to fuse heritage sounds with contemporary production.', price_per_session: 6500, sessions_completed: 380, accent_color: 'linear-gradient(135deg, #059669, #A7F3D0)', image_initial: 'SK' },
   { id: 19, name: 'Fatima Hassan', specialty: 'Swahili Pop & Coastal Music', experience_years: 8, rating: 4.7, bio: 'Mombasa-born, Nairobi-based artist coach specializing in Swahili pop, Taarab-fusion, and coastal Kenyan music. Helps artists write in Swahili, connect with the East African market, and pitch to regional playlists.', price_per_session: 6200, sessions_completed: 145, accent_color: 'linear-gradient(135deg, #0EA5E9, #7DD3FC)', image_initial: 'FH' },
   { id: 20, name: 'Peter Ndung\'u', specialty: 'Sound Engineering & Mixing', experience_years: 12, rating: 4.8, bio: 'Chief engineer at a top Nairobi studio with credits on Kenya\'s biggest albums. Teaches mixing, mastering, and home studio setup for artists working with limited budgets in East Africa.', price_per_session: 7500, sessions_completed: 285, accent_color: 'linear-gradient(135deg, #6366F1, #A5B4FC)', image_initial: 'PN' },
+  { id: 21, name: 'Amina Wainaina', specialty: 'Sync Licensing & Brand Partnerships', experience_years: 11, rating: 4.9, bio: 'Artist manager and sync licensing specialist with experience placing East African music in international film, TV, and ad campaigns. Guides artists through branding, catalogue strategy, and global placement opportunities.', price_per_session: 14200, sessions_completed: 325, accent_color: 'linear-gradient(135deg, #F472B6, #EC4899)', image_initial: 'AW' },
 ];
+let nextCoachId = 22;
+const coachSubscribers = [];
+
+function broadcastCoachUpdate() {
+  const payload = JSON.stringify({ coaches, updated_at: new Date().toISOString() });
+  coachSubscribers.forEach(res => {
+    try {
+      res.write(`event: coaches-updated\ndata: ${payload}\n\n`);
+    } catch (err) {
+      // ignore write errors for closed streams
+    }
+  });
+}
 
 app.get('/api/coaches', (req, res) => {
+  res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
   res.json(coaches);
+});
+
+app.get('/api/coaches/stream', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+  res.write('retry: 10000\n\n');
+
+  coachSubscribers.push(res);
+  req.on('close', () => {
+    const index = coachSubscribers.indexOf(res);
+    if (index !== -1) coachSubscribers.splice(index, 1);
+  });
+});
+
+app.post('/api/coaches', (req, res) => {
+  const {
+    name,
+    specialty,
+    experience_years = 5,
+    rating = 4.7,
+    bio = '',
+    price_per_session = 9500,
+    sessions_completed = 0,
+    accent_color = 'linear-gradient(135deg, #6366F1, #A5B4FC)',
+    image_initial,
+  } = req.body;
+
+  if (!name || !specialty) {
+    return res.status(400).json({ success: false, message: 'Coach name and specialty are required.' });
+  }
+
+  const coach = {
+    id: nextCoachId++,
+    name,
+    specialty,
+    experience_years,
+    rating,
+    bio,
+    price_per_session,
+    sessions_completed,
+    accent_color,
+    image_initial: image_initial || name.split(' ').map(word => word[0]).join('').substring(0, 2).toUpperCase(),
+  };
+
+  coaches.push(coach);
+  broadcastCoachUpdate();
+  res.json({ success: true, coach });
 });
 
 app.get('/api/artists', (req, res) => {
@@ -675,6 +818,7 @@ app.get('/ml/market-trends', async (req, res) => {
   try {
     const mlRes = await fetch(`${ML_SERVICE_URL}/market-trends`);
     const data = await mlRes.json();
+    res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=1800');
     res.json(data);
   } catch {
     res.json({
@@ -958,6 +1102,7 @@ async function buildMarketData() {
 app.get('/api/market-intelligence', async (req, res) => {
   try {
     const data = await buildMarketData();
+    res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=1800');
     res.json({ success: true, data });
   } catch (err) {
     console.error('[Market] Error:', err.message);
@@ -1027,8 +1172,167 @@ Be specific, data-driven, and actionable.`;
 });
 
 // ────────────────────────────────────────────
-// SERVE PAGES
+// M-PESA STK PUSH — Lipa Na M-Pesa Online
 // ────────────────────────────────────────────
+const MPESA_ENV           = process.env.MPESA_ENV === 'production' ? 'production' : 'sandbox';
+const MPESA_BASE          = MPESA_ENV === 'production'
+  ? 'https://api.safaricom.co.ke'
+  : 'https://sandbox.safaricom.co.ke';
+const MPESA_CONSUMER_KEY  = process.env.MPESA_CONSUMER_KEY || '';
+const MPESA_CONSUMER_SECRET = process.env.MPESA_CONSUMER_SECRET || '';
+const MPESA_SHORTCODE     = process.env.MPESA_SHORTCODE || '174379';
+const MPESA_PASSKEY       = process.env.MPESA_PASSKEY || '';
+const MPESA_CALLBACK_URL  = process.env.MPESA_CALLBACK_URL || `http://localhost:${PORT}/api/mpesa/callback`;
+
+// In-memory store for STK push results (keyed by CheckoutRequestID)
+const mpesaTransactions = {};
+
+async function getMpesaToken() {
+  const creds = Buffer.from(`${MPESA_CONSUMER_KEY}:${MPESA_CONSUMER_SECRET}`).toString('base64');
+  const res = await fetch(`${MPESA_BASE}/oauth/v1/generate?grant_type=client_credentials`, {
+    headers: { Authorization: `Basic ${creds}` },
+    signal: AbortSignal.timeout(10000),
+  });
+  if (!res.ok) throw new Error(`M-Pesa auth failed: ${res.status}`);
+  const data = await res.json();
+  return data.access_token;
+}
+
+function mpesaTimestamp() {
+  return new Date().toISOString().replace(/[^0-9]/g, '').slice(0, 14);
+}
+
+function mpesaPassword(timestamp) {
+  return Buffer.from(`${MPESA_SHORTCODE}${MPESA_PASSKEY}${timestamp}`).toString('base64');
+}
+
+// Normalise phone: 07XXXXXXXX or 2547XXXXXXXX → 2547XXXXXXXX
+function normaliseMpesaPhone(phone) {
+  const digits = phone.replace(/\D/g, '');
+  if (digits.startsWith('0') && digits.length === 10) return `254${digits.slice(1)}`;
+  if (digits.startsWith('254') && digits.length === 12) return digits;
+  if (digits.startsWith('7') && digits.length === 9) return `254${digits}`;
+  throw new Error('Invalid Kenyan phone number. Use format 07XXXXXXXX or 2547XXXXXXXX.');
+}
+
+// POST /api/mpesa/stk-push
+app.post('/api/mpesa/stk-push', async (req, res) => {
+  const { phone, amount, coach_id, coach_name, date, time } = req.body;
+
+  if (!phone || !amount || !coach_id) {
+    return res.status(400).json({ success: false, message: 'phone, amount, and coach_id are required.' });
+  }
+
+  let msisdn;
+  try {
+    msisdn = normaliseMpesaPhone(phone);
+  } catch (err) {
+    return res.status(400).json({ success: false, message: err.message });
+  }
+
+  const amountInt = Math.ceil(Number(amount));
+  if (isNaN(amountInt) || amountInt < 1) {
+    return res.status(400).json({ success: false, message: 'Invalid amount.' });
+  }
+
+  try {
+    const token     = await getMpesaToken();
+    const timestamp = mpesaTimestamp();
+    const password  = mpesaPassword(timestamp);
+
+    const payload = {
+      BusinessShortCode: MPESA_SHORTCODE,
+      Password:          password,
+      Timestamp:         timestamp,
+      TransactionType:   'CustomerPayBillOnline',
+      Amount:            amountInt,
+      PartyA:            msisdn,
+      PartyB:            MPESA_SHORTCODE,
+      PhoneNumber:       msisdn,
+      CallBackURL:       MPESA_CALLBACK_URL,
+      AccountReference:  `OXYCORP-${coach_id}`,
+      TransactionDesc:   `Session with ${coach_name || 'Coach'}`,
+    };
+
+    const stkRes = await fetch(`${MPESA_BASE}/mpesa/stkpush/v1/processrequest`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body:    JSON.stringify(payload),
+      signal:  AbortSignal.timeout(15000),
+    });
+
+    const stkData = await stkRes.json();
+
+    if (stkData.ResponseCode !== '0') {
+      return res.status(400).json({
+        success: false,
+        message: stkData.errorMessage || stkData.ResponseDescription || 'STK push failed.',
+      });
+    }
+
+    // Seed transaction record — callback will update it
+    const checkoutId = stkData.CheckoutRequestID;
+    mpesaTransactions[checkoutId] = {
+      status:     'pending',
+      coach_id,
+      coach_name: coach_name || 'Coach',
+      amount:     amountInt,
+      phone:      msisdn,
+      date,
+      time,
+      created:    new Date().toISOString(),
+    };
+
+    console.log(`[M-Pesa] STK push sent → ${msisdn} KES ${amountInt} | ${checkoutId}`);
+    return res.json({
+      success:           true,
+      CheckoutRequestID: checkoutId,
+      message:           'M-Pesa prompt sent. Enter your PIN on your phone.',
+    });
+  } catch (err) {
+    console.error('[M-Pesa] STK push error:', err.message);
+    return res.status(500).json({ success: false, message: 'Could not reach M-Pesa. Try again.' });
+  }
+});
+
+// POST /api/mpesa/callback  — Safaricom posts result here
+app.post('/api/mpesa/callback', (req, res) => {
+  const body = req.body?.Body?.stkCallback;
+  if (!body) return res.json({ ResultCode: 0, ResultDesc: 'Accepted' });
+
+  const checkoutId = body.CheckoutRequestID;
+  const resultCode = body.ResultCode;
+
+  if (!mpesaTransactions[checkoutId]) {
+    mpesaTransactions[checkoutId] = {};
+  }
+
+  if (resultCode === 0) {
+    // Payment successful — extract metadata
+    const items = body.CallbackMetadata?.Item || [];
+    const get   = name => items.find(i => i.Name === name)?.Value;
+    mpesaTransactions[checkoutId].status  = 'success';
+    mpesaTransactions[checkoutId].receipt = get('MpesaReceiptNumber');
+    mpesaTransactions[checkoutId].amount  = get('Amount');
+    mpesaTransactions[checkoutId].phone   = get('PhoneNumber');
+    console.log(`[M-Pesa] Payment confirmed: ${get('MpesaReceiptNumber')} KES ${get('Amount')}`);
+  } else {
+    mpesaTransactions[checkoutId].status  = 'failed';
+    mpesaTransactions[checkoutId].message = body.ResultDesc;
+    console.log(`[M-Pesa] Payment failed (${resultCode}): ${body.ResultDesc}`);
+  }
+
+  res.json({ ResultCode: 0, ResultDesc: 'Accepted' });
+});
+
+// GET /api/mpesa/status/:checkoutId — frontend polls this
+app.get('/api/mpesa/status/:checkoutId', (req, res) => {
+  const tx = mpesaTransactions[req.params.checkoutId];
+  if (!tx) return res.status(404).json({ status: 'not_found' });
+  res.json(tx);
+});
+
+
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/home', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/landing', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));

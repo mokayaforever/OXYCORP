@@ -67,12 +67,120 @@ function setUser(user) {
   document.getElementById('nav-auth-guest').classList.add('hidden');
   document.getElementById('nav-auth-user').classList.remove('hidden');
   document.getElementById('nav-username').textContent = `♪ ${user.name.split(' ')[0]}`;
+  document.getElementById('nav-avatar').textContent = user.avatar || user.name.charAt(0).toUpperCase();
 }
 
 function clearUser() {
   state.user = null;
   document.getElementById('nav-auth-guest').classList.remove('hidden');
   document.getElementById('nav-auth-user').classList.add('hidden');
+  document.getElementById('nav-avatar').textContent = '♪';
+}
+
+async function openProfileSettings() {
+  if (!state.user) {
+    showToast('Please sign in to update your profile.', 'error');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/profile`);
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('profile-name').value = data.profile.name;
+      document.getElementById('profile-avatar').value = data.profile.avatar || data.profile.name.charAt(0).toUpperCase();
+      document.getElementById('current-password').value = '';
+      document.getElementById('new-password').value = '';
+      document.getElementById('confirm-password').value = '';
+      document.getElementById('profile-message').classList.add('hidden');
+      document.getElementById('profile-error').classList.add('hidden');
+      openModal('profile');
+    } else {
+      showToast(data.message || 'Unable to load profile.', 'error');
+    }
+  } catch (e) {
+    showToast('Unable to load profile settings.', 'error');
+  }
+}
+
+async function handleProfileUpdate() {
+  const name = document.getElementById('profile-name').value.trim();
+  const avatar = document.getElementById('profile-avatar').value.trim();
+  const msgEl = document.getElementById('profile-message');
+  const errEl = document.getElementById('profile-error');
+
+  if (!name) {
+    showFormError(errEl, 'Please enter your name.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/profile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, avatar })
+    });
+    const data = await res.json();
+    if (data.success) {
+      msgEl.textContent = 'Profile updated successfully.';
+      msgEl.classList.remove('hidden');
+      errEl.classList.add('hidden');
+      state.user.name = data.profile.name;
+      state.user.avatar = data.profile.avatar;
+      setUser(state.user);
+    } else {
+      showFormError(errEl, data.message || 'Update failed.');
+    }
+  } catch (e) {
+    showFormError(errEl, 'Failed to update profile.');
+  }
+}
+
+async function handleChangePassword() {
+  const currentPassword = document.getElementById('current-password').value;
+  const newPassword = document.getElementById('new-password').value;
+  const confirmPassword = document.getElementById('confirm-password').value;
+  const errEl = document.getElementById('profile-error');
+  const msgEl = document.getElementById('profile-message');
+
+  if (!currentPassword || !newPassword || !confirmPassword) {
+    showFormError(errEl, 'Please complete all password fields.');
+    return;
+  }
+  if (newPassword !== confirmPassword) {
+    showFormError(errEl, 'New password and confirmation do not match.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/change-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword, confirm_password: confirmPassword })
+    });
+    const data = await res.json();
+    if (data.success) {
+      msgEl.textContent = data.message || 'Password changed successfully.';
+      msgEl.classList.remove('hidden');
+      errEl.classList.add('hidden');
+      document.getElementById('current-password').value = '';
+      document.getElementById('new-password').value = '';
+      document.getElementById('confirm-password').value = '';
+    } else {
+      showFormError(errEl, data.message || 'Password update failed.');
+    }
+  } catch (e) {
+    showFormError(errEl, 'Failed to change password.');
+  }
+}
+
+function togglePasswordVisibility(inputIds, checkbox) {
+  const ids = typeof inputIds === 'string' ? inputIds.split(',') : [inputIds];
+  ids.forEach(id => {
+    const input = document.getElementById(id.trim());
+    if (!input) return;
+    input.type = checkbox.checked ? 'text' : 'password';
+  });
 }
 
 async function handleLogin() {
@@ -409,7 +517,7 @@ function switchModal(from, to) {
 // Close modals on Escape
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    ['login', 'register', 'booking'].forEach(closeModal);
+    ['login', 'register', 'booking', 'profile'].forEach(closeModal);
   }
 });
 
@@ -431,4 +539,12 @@ document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
   if (document.getElementById('modal-login')?.classList.contains('open')) handleLogin();
   if (document.getElementById('modal-register')?.classList.contains('open')) handleRegister();
+  if (document.getElementById('modal-profile')?.classList.contains('open')) {
+    const activeId = document.activeElement?.id;
+    if (['current-password', 'new-password', 'confirm-password'].includes(activeId)) {
+      handleChangePassword();
+    } else {
+      handleProfileUpdate();
+    }
+  }
 });

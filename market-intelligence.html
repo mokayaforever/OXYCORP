@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+    <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512"/>
+<meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OXYCORP</title>
+    <meta name="description" content="AI Music Career Intelligence System for musicians, coaches, and music professionals."/>
+<title>OXYCORP — AI Music Career Intelligence</title>
   <link rel="stylesheet" href="global.css" />
   <style>
     .market-hero { padding: 7rem 0 4rem; }
@@ -299,11 +301,23 @@
 
     async function loadMarketData() {
       renderLastUpdated(new Date().toISOString(), ['curated industry pulse'], false);
+
+      // Show cached data immediately while fetching
+      const cached = localStorage.getItem('oxycorp_market_cache');
+      if (cached) {
+        try {
+          const { data } = JSON.parse(cached);
+          liveData = { ...FALLBACK, ...data };
+          renderAll(liveData, false);
+        } catch { /* ignore bad cache */ }
+      }
+
       try {
         const res = await fetch(API, { signal: AbortSignal.timeout(12000), headers: { 'Accept': 'application/json' } });
         const json = await res.json();
-        if (json && json.success && json.data) {
+        if (json && json.success && json.data && !json.data.offline) {
           liveData = { ...FALLBACK, ...json.data, is_live: true };
+          localStorage.setItem('oxycorp_market_cache', JSON.stringify({ data: json.data, ts: Date.now() }));
           renderAll(liveData, true);
           return;
         }
@@ -311,8 +325,12 @@
       } catch (err) {
         console.warn('[Market] Live fetch failed:', err.message);
       }
-      liveData = FALLBACK;
-      renderAll(FALLBACK, false);
+
+      // Only fall back to FALLBACK if no localStorage cache
+      if (!liveData) {
+        liveData = FALLBACK;
+        renderAll(FALLBACK, false);
+      }
     }
 
     function renderAll(data, isLive) {

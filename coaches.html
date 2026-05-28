@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+    <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512"/>
+<meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OXYCORP — Meet Our Coaches</title>
+    <meta name="description" content="AI Music Career Intelligence System for musicians, coaches, and music professionals."/>
+<title>OXYCORP — Meet Our Coaches | AI Music Career Intelligence</title>
   <link rel="stylesheet" href="global.css" />
   <style>
     .coaches-hero { padding: 7rem 0 3rem; }
@@ -129,6 +131,10 @@
         <button class="filter-btn" data-filter="marketing">Marketing</button>
         <button class="filter-btn" data-filter="management">Management</button>
       </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:1rem;flex-wrap:wrap;font-size:0.82rem;color:var(--muted);">
+        <div id="coach-updates-status">Live coach updates enabled — checking for new industry coaches.</div>
+        <div id="coach-last-updated"></div>
+      </div>
 
       <div class="coaches-grid" id="coachesGrid">
         <div style="color:var(--muted);font-size:0.85rem;padding:2rem;">Loading coaches…</div>
@@ -145,18 +151,144 @@
     </div>
   </div>
 
+  <!-- M-Pesa STK Push Payment Modal -->
+  <div id="payModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(6px);z-index:2000;align-items:center;justify-content:center;padding:1.5rem;">
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:16px;max-width:420px;width:100%;padding:2rem;position:relative;">
+      <button onclick="closePayModal()" style="position:absolute;top:1rem;right:1rem;background:var(--surface2);border:1px solid var(--border);border-radius:50%;width:32px;height:32px;cursor:pointer;font-size:0.9rem;">✕</button>
+
+      <!-- Step 1: Phone input -->
+      <div id="pay-step-input">
+        <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1.5rem;">
+          <div style="width:44px;height:44px;background:#4CAF50;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;">📱</div>
+          <div>
+            <div style="font-family:var(--font-d);font-size:1.2rem;font-weight:700;">Pay via M-Pesa</div>
+            <div style="font-size:0.78rem;color:var(--muted);">Lipa Na M-Pesa · Secure payment</div>
+          </div>
+        </div>
+
+        <div id="pay-summary" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:1rem;margin-bottom:1.2rem;font-size:0.85rem;">
+          <!-- filled by openPayModal() -->
+        </div>
+
+        <div style="margin-bottom:1rem;">
+          <label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:0.4rem;">M-Pesa Phone Number</label>
+          <input id="pay-phone" type="tel" placeholder="07XXXXXXXX or 2547XXXXXXXX"
+            style="width:100%;padding:0.75rem 1rem;border:1px solid var(--border);border-radius:var(--r);font-size:0.95rem;background:var(--surface2);outline:none;"
+            oninput="clearPayError()"/>
+          <div id="pay-error" style="color:#ef4444;font-size:0.78rem;margin-top:0.4rem;display:none;"></div>
+        </div>
+
+        <button onclick="submitStkPush()" id="pay-btn"
+          style="width:100%;padding:0.85rem;background:#4CAF50;color:#fff;border:none;border-radius:50px;font-size:0.9rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:0.5rem;">
+          📲 Send M-Pesa Prompt
+        </button>
+        <p style="font-size:0.72rem;color:var(--muted);text-align:center;margin-top:0.8rem;">You will receive a PIN prompt on your phone. Enter your M-Pesa PIN to complete payment.</p>
+      </div>
+
+      <!-- Step 2: Waiting for PIN -->
+      <div id="pay-step-waiting" style="display:none;text-align:center;padding:1rem 0;">
+        <div style="font-size:2.5rem;margin-bottom:1rem;">📲</div>
+        <div style="font-family:var(--font-d);font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;">Check Your Phone</div>
+        <div style="color:var(--muted);font-size:0.85rem;line-height:1.7;margin-bottom:1.5rem;">An M-Pesa PIN prompt has been sent to <strong id="pay-phone-display"></strong>.<br/>Enter your PIN to complete the payment.</div>
+        <div style="display:flex;gap:6px;justify-content:center;margin-bottom:1.5rem;">
+          <span style="width:8px;height:8px;background:#4CAF50;border-radius:50%;animation:bounce 1.2s infinite;"></span>
+          <span style="width:8px;height:8px;background:#4CAF50;border-radius:50%;animation:bounce 1.2s infinite 0.15s;"></span>
+          <span style="width:8px;height:8px;background:#4CAF50;border-radius:50%;animation:bounce 1.2s infinite 0.3s;"></span>
+        </div>
+        <div style="font-size:0.75rem;color:var(--muted);">Waiting for confirmation… <span id="pay-countdown">60</span>s</div>
+        <button onclick="closePayModal()" style="margin-top:1.2rem;background:none;border:1px solid var(--border);border-radius:50px;padding:0.5rem 1.4rem;font-size:0.78rem;cursor:pointer;color:var(--muted);">Cancel</button>
+      </div>
+
+      <!-- Step 3: Success -->
+      <div id="pay-step-success" style="display:none;text-align:center;padding:1rem 0;">
+        <div style="font-size:3rem;margin-bottom:1rem;">✅</div>
+        <div style="font-family:var(--font-d);font-size:1.2rem;font-weight:700;margin-bottom:0.5rem;">Payment Confirmed!</div>
+        <div style="color:var(--muted);font-size:0.85rem;line-height:1.7;margin-bottom:1rem;">Your session has been booked successfully.</div>
+        <div id="pay-receipt" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:0.9rem;font-size:0.82rem;margin-bottom:1.2rem;"></div>
+        <button onclick="closePayModal()" style="background:#4CAF50;color:#fff;border:none;border-radius:50px;padding:0.75rem 2rem;font-size:0.88rem;font-weight:700;cursor:pointer;">Done</button>
+      </div>
+
+      <!-- Step 4: Failed -->
+      <div id="pay-step-failed" style="display:none;text-align:center;padding:1rem 0;">
+        <div style="font-size:3rem;margin-bottom:1rem;">❌</div>
+        <div style="font-family:var(--font-d);font-size:1.1rem;font-weight:700;margin-bottom:0.5rem;">Payment Failed</div>
+        <div id="pay-fail-msg" style="color:var(--muted);font-size:0.85rem;margin-bottom:1.2rem;"></div>
+        <button onclick="retryPayment()" style="background:#4CAF50;color:#fff;border:none;border-radius:50px;padding:0.75rem 2rem;font-size:0.88rem;font-weight:700;cursor:pointer;margin-right:0.5rem;">Try Again</button>
+        <button onclick="closePayModal()" style="background:none;border:1px solid var(--border);border-radius:50px;padding:0.75rem 1.5rem;font-size:0.88rem;cursor:pointer;color:var(--muted);">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <script src="shared.js"></script>
   <script>
     let allCoaches = [];
+    let coachPollInterval = null;
+    let activePayCoach = null;
+    let pollTimer = null;
+    let countdownTimer = null;
+    let activeCheckoutId = null;
 
     async function loadCoaches() {
       try {
         const res = await fetch('/api/coaches');
         allCoaches = await res.json();
+        if (allCoaches.offline) throw new Error('offline');
+        localStorage.setItem('oxycorp_coaches_cache', JSON.stringify({ data: allCoaches, ts: Date.now() }));
+        const updatedAt = new Date();
+        const updatedEl = document.getElementById('coach-last-updated');
+        if (updatedEl) updatedEl.textContent = `Last refreshed: ${updatedAt.toLocaleTimeString()}`;
       } catch (e) {
-        console.warn('Failed to load coaches:', e);
+        // Serve from localStorage cache when offline
+        const cached = localStorage.getItem('oxycorp_coaches_cache');
+        if (cached) {
+          const { data, ts } = JSON.parse(cached);
+          allCoaches = data;
+          const age = Math.round((Date.now() - ts) / 60000);
+          const updatedEl = document.getElementById('coach-last-updated');
+          if (updatedEl) updatedEl.textContent = `📡 Offline — showing data cached ${age} min ago`;
+        } else {
+          console.warn('Failed to load coaches and no cache available:', e);
+        }
       }
       renderCoaches(allCoaches);
+    }
+
+    function subscribeCoachStream() {
+      if (!window.EventSource) {
+        startCoachPolling();
+        return;
+      }
+
+      const statusEl = document.getElementById('coach-updates-status');
+      const source = new EventSource('/api/coaches/stream');
+
+      source.addEventListener('open', () => {
+        if (statusEl) statusEl.textContent = 'Live coach updates enabled — connected and waiting for new coaches.';
+      });
+
+      source.addEventListener('coaches-updated', (event) => {
+        try {
+          const payload = JSON.parse(event.data);
+          allCoaches = payload.coaches || allCoaches;
+          renderCoaches(allCoaches);
+          if (statusEl) statusEl.textContent = `Live coach updates enabled — new data received at ${new Date(payload.updated_at).toLocaleTimeString()}`;
+          const updatedEl = document.getElementById('coach-last-updated');
+          if (updatedEl) updatedEl.textContent = `Last refreshed: ${new Date(payload.updated_at).toLocaleTimeString()}`;
+        } catch (err) {
+          console.warn('Failed to parse live coach update:', err);
+        }
+      });
+
+      source.addEventListener('error', () => {
+        if (statusEl) statusEl.textContent = 'Live coach update disconnected. Falling back to polling every 30 seconds.';
+        source.close();
+        startCoachPolling();
+      });
+    }
+
+    function startCoachPolling() {
+      if (coachPollInterval) return;
+      coachPollInterval = setInterval(loadCoaches, 30000);
     }
 
     function renderCoaches(coaches) {
@@ -232,7 +364,7 @@
           </div>
         </div>
         <div style="display:flex;gap:0.8rem;">
-          <a href="advisor.html?topic=${encodeURIComponent('I want to book a session with ' + c.name + ' (' + c.specialty + '). What should I prepare?')}" class="btn btn-primary" style="flex:1;justify-content:center;">Book Session → KES ${priceKES}</a>
+          <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="openPayModal(${c.id})">📱 Pay via M-Pesa → KES ${priceKES}</button>
           <a href="advisor.html?topic=${encodeURIComponent('Tell me more about ' + c.name + ' and their expertise in ' + c.specialty)}" class="btn" style="flex:1;justify-content:center;border:1px solid var(--border);background:var(--surface2);">Ask AI About Coach</a>
         </div>
       `;
@@ -257,7 +389,157 @@
     });
 
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCoachModal(); });
-    window.addEventListener('load', loadCoaches);
+    window.addEventListener('load', () => {
+      loadCoaches();
+      subscribeCoachStream();
+    });
+
+    // ── M-Pesa STK Push ──────────────────────────────────────────────────────
+    function openPayModal(coachId) {
+      activePayCoach = allCoaches.find(c => c.id === coachId);
+      if (!activePayCoach) return;
+
+      const priceKES = activePayCoach.price_per_session.toLocaleString();
+      document.getElementById('pay-summary').innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-weight:600;">${activePayCoach.name}</div>
+            <div style="color:var(--muted);font-size:0.78rem;">${activePayCoach.specialty}</div>
+          </div>
+          <div style="font-family:var(--font-d);font-size:1.2rem;font-weight:700;color:#4CAF50;">KES ${priceKES}</div>
+        </div>
+      `;
+
+      showPayStep('input');
+      document.getElementById('pay-phone').value = '';
+      clearPayError();
+      document.getElementById('payModal').style.display = 'flex';
+    }
+
+    function closePayModal() {
+      clearInterval(pollTimer);
+      clearInterval(countdownTimer);
+      pollTimer = null;
+      countdownTimer = null;
+      activeCheckoutId = null;
+      document.getElementById('payModal').style.display = 'none';
+    }
+
+    function retryPayment() {
+      showPayStep('input');
+    }
+
+    function showPayStep(step) {
+      ['input','waiting','success','failed'].forEach(s =>
+        document.getElementById(`pay-step-${s}`).style.display = s === step ? 'block' : 'none'
+      );
+    }
+
+    function clearPayError() {
+      const el = document.getElementById('pay-error');
+      el.style.display = 'none';
+      el.textContent = '';
+    }
+
+    function showPayError(msg) {
+      const el = document.getElementById('pay-error');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    async function submitStkPush() {
+      const phone = document.getElementById('pay-phone').value.trim();
+      if (!phone) { showPayError('Please enter your M-Pesa phone number.'); return; }
+
+      const btn = document.getElementById('pay-btn');
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+
+      try {
+        const res = await fetch('/api/mpesa/stk-push', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone,
+            amount:     activePayCoach.price_per_session,
+            coach_id:   activePayCoach.id,
+            coach_name: activePayCoach.name,
+          }),
+        });
+        const data = await res.json();
+
+        if (!data.success) {
+          showPayError(data.message || 'Failed to send M-Pesa prompt.');
+          btn.disabled = false;
+          btn.innerHTML = '📲 Send M-Pesa Prompt';
+          return;
+        }
+
+        activeCheckoutId = data.CheckoutRequestID;
+        document.getElementById('pay-phone-display').textContent = phone;
+        showPayStep('waiting');
+        startPolling();
+      } catch (err) {
+        showPayError('Network error. Please try again.');
+        btn.disabled = false;
+        btn.innerHTML = '📲 Send M-Pesa Prompt';
+      }
+    }
+
+    function startPolling() {
+      let seconds = 60;
+      const countdownEl = document.getElementById('pay-countdown');
+
+      countdownTimer = setInterval(() => {
+        seconds--;
+        if (countdownEl) countdownEl.textContent = seconds;
+        if (seconds <= 0) {
+          clearInterval(countdownTimer);
+          clearInterval(pollTimer);
+          document.getElementById('pay-fail-msg').textContent = 'Payment timed out. Please try again.';
+          showPayStep('failed');
+        }
+      }, 1000);
+
+      pollTimer = setInterval(async () => {
+        if (!activeCheckoutId) return;
+        try {
+          const res = await fetch(`/api/mpesa/status/${activeCheckoutId}`);
+          const tx  = await res.json();
+
+          if (tx.status === 'success') {
+            clearInterval(pollTimer);
+            clearInterval(countdownTimer);
+            document.getElementById('pay-receipt').innerHTML = `
+              <div style="display:flex;justify-content:space-between;margin-bottom:0.4rem;">
+                <span style="color:var(--muted);">Receipt</span>
+                <strong>${tx.receipt || '—'}</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:0.4rem;">
+                <span style="color:var(--muted);">Amount</span>
+                <strong>KES ${Number(tx.amount || activePayCoach.price_per_session).toLocaleString()}</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;">
+                <span style="color:var(--muted);">Coach</span>
+                <strong>${activePayCoach.name}</strong>
+              </div>
+            `;
+            showPayStep('success');
+          } else if (tx.status === 'failed') {
+            clearInterval(pollTimer);
+            clearInterval(countdownTimer);
+            document.getElementById('pay-fail-msg').textContent =
+              tx.message || 'Payment was cancelled or declined.';
+            showPayStep('failed');
+          }
+        } catch { /* ignore transient poll errors */ }
+      }, 3000);
+    }
+
+    // Close pay modal on backdrop click
+    document.getElementById('payModal').addEventListener('click', function(e) {
+      if (e.target === this) closePayModal();
+    });
   </script>
 </body>
 </html>

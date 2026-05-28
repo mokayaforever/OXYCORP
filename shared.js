@@ -31,6 +31,29 @@ function injectNav() {
     </div>
   `;
   document.body.prepend(nav);
+
+  // Mobile bottom tab bar
+  injectMobileTabBar(active);
+}
+
+function injectMobileTabBar(active) {
+  const tabs = [
+    { href: 'index.html',               icon: '🏠', label: 'Home',    file: 'index.html' },
+    { href: 'advisor.html',             icon: '🤖', label: 'Advisor', file: 'advisor.html' },
+    { href: 'coaches.html',             icon: '🎓', label: 'Coaches', file: 'coaches.html' },
+    { href: 'market-intelligence.html', icon: '📊', label: 'Market',  file: 'market-intelligence.html' },
+    { href: 'guidance.html',            icon: '🧭', label: 'Guidance',file: 'guidance.html' },
+  ];
+
+  const bar = document.createElement('div');
+  bar.className = 'mobile-tab-bar';
+  bar.innerHTML = tabs.map(t => `
+    <a href="${t.href}" class="mobile-tab ${active === t.file ? 'mobile-tab--active' : ''}">
+      <span class="mobile-tab__icon">${t.icon}</span>
+      <span class="mobile-tab__label">${t.label}</span>
+    </a>
+  `).join('');
+  document.body.appendChild(bar);
 }
 
 function injectOrbs() {
@@ -117,7 +140,135 @@ async function mlScore(payload, endpoint = '/ml/predict') {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  injectPWAMeta();
   injectOrbs();
   injectNav();
   injectFooter();
+  registerServiceWorker();
+  setupInstallBanner();
+  setupLazyImages();
+  showOfflineBanner();
 });
+
+// ── Network Quality ──────────────────────────────────────────────────────────
+function is3G() {
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (!conn) return false;
+  return conn.effectiveType === '2g' || conn.effectiveType === '3g' || conn.saveData;
+}
+
+// ── Lazy Image Loading with low-res placeholder on slow connections ──────────
+function setupLazyImages() {
+  // Add loading="lazy" to all images missing it
+  document.querySelectorAll('img:not([loading])').forEach(img => {
+    img.setAttribute('loading', 'lazy');
+    img.setAttribute('decoding', 'async');
+  });
+
+  // On 3G: replace high-res src with data-src, show placeholder until in-view
+  if (is3G()) {
+    document.querySelectorAll('img[src]:not([data-lazy-done])').forEach(img => {
+      const src = img.getAttribute('src');
+      if (!src || src.startsWith('data:')) return;
+      img.setAttribute('data-src', src);
+      img.setAttribute('src', 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22%3E%3C/svg%3E');
+      img.style.background = 'var(--surface2, #1e1e2e)';
+      img.setAttribute('data-lazy-done', '1');
+    });
+
+    const io = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const img = entry.target;
+        const src = img.getAttribute('data-src');
+        if (src) img.src = src;
+        obs.unobserve(img);
+      });
+    }, { rootMargin: '200px' });
+
+    document.querySelectorAll('img[data-src]').forEach(img => io.observe(img));
+  }
+}
+
+// ── Offline Banner ───────────────────────────────────────────────────────────
+function showOfflineBanner() {
+  if (navigator.onLine) return;
+  const banner = document.createElement('div');
+  banner.id = 'offline-banner';
+  banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:10000;padding:0.6rem 1rem;background:#1e293b;border-bottom:1px solid rgba(200,168,75,0.3);text-align:center;font-size:0.78rem;color:rgba(255,255,255,0.8);font-family:Inter,sans-serif;';
+  banner.innerHTML = '📡 You\'re offline — showing cached content. <a href="offline.html" style="color:#c8a84b;text-decoration:underline;">View available pages</a>';
+  document.body.prepend(banner);
+
+  window.addEventListener('online', () => banner.remove(), { once: true });
+}
+
+// ── PWA Meta Tags ──
+function injectPWAMeta() {
+  const head = document.head;
+  const metas = [
+    { name: 'link', attrs: { rel: 'manifest', href: '/manifest.json' } },
+    { name: 'meta', attrs: { name: 'theme-color', content: '#191414' } },
+    { name: 'meta', attrs: { name: 'apple-mobile-web-app-capable', content: 'yes' } },
+    { name: 'meta', attrs: { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' } },
+    { name: 'meta', attrs: { name: 'apple-mobile-web-app-title', content: 'OXYCORP' } },
+    { name: 'link', attrs: { rel: 'apple-touch-icon', href: '/icon-512.png' } },
+    { name: 'meta', attrs: { name: 'mobile-web-app-capable', content: 'yes' } },
+  ];
+  metas.forEach(m => {
+    const el = document.createElement(m.name);
+    Object.entries(m.attrs).forEach(([k, v]) => el.setAttribute(k, v));
+    head.appendChild(el);
+  });
+}
+
+// ── Service Worker ──
+function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js')
+      .then(reg => console.log('[PWA] Service worker registered:', reg.scope))
+      .catch(err => console.warn('[PWA] SW registration failed:', err));
+  }
+}
+
+// ── Install Banner ──
+let deferredPrompt = null;
+function setupInstallBanner() {
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    showInstallBanner();
+  });
+}
+
+function showInstallBanner() {
+  if (document.getElementById('pwa-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'pwa-banner';
+  banner.innerHTML = `
+    <div style="position:fixed;bottom:0;left:0;right:0;z-index:9999;padding:1rem 1.2rem;background:linear-gradient(135deg,#191414,#1a1a2e);border-top:1px solid rgba(200,168,75,0.3);display:flex;align-items:center;gap:1rem;font-family:Inter,sans-serif;">
+      <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#c8a84b,#e5c878);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;">♪</div>
+      <div style="flex:1;min-width:0;">
+        <div style="color:#fff;font-size:0.88rem;font-weight:600;">Install OXYCORP</div>
+        <div style="color:rgba(255,255,255,0.6);font-size:0.72rem;">Add to home screen for the full app experience</div>
+      </div>
+      <button onclick="installPWA()" style="background:linear-gradient(135deg,#c8a84b,#e5c878);color:#191414;border:none;padding:0.5rem 1.2rem;border-radius:50px;font-size:0.78rem;font-weight:700;cursor:pointer;white-space:nowrap;">Install</button>
+      <button onclick="dismissBanner()" style="background:none;border:none;color:rgba(255,255,255,0.4);font-size:1.1rem;cursor:pointer;padding:0.3rem;">✕</button>
+    </div>
+  `;
+  document.body.appendChild(banner);
+}
+
+function installPWA() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(result => {
+    console.log('[PWA] Install:', result.outcome);
+    deferredPrompt = null;
+    dismissBanner();
+  });
+}
+
+function dismissBanner() {
+  const b = document.getElementById('pwa-banner');
+  if (b) b.remove();
+}
