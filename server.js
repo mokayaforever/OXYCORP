@@ -21,6 +21,82 @@ const ML_SERVICE_URL = process.env.ML_URL || 'http://localhost:8000';
 const DJANGO_URL = process.env.DJANGO_URL || 'http://localhost:8001';
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 
+// ────────────────────────────────────────────
+// SUBSCRIPTION PLANS & TRIAL CONFIG
+// ────────────────────────────────────────────
+const FREE_TRIAL_DAYS = 7;
+const SUBSCRIPTION_PLANS = {
+  starter: {
+    name: 'Starter',
+    price: 999,
+    period: 'month',
+    features: [
+      'AI Advisor (10 chats/day)',
+      'Career Analysis',
+      'Skill Assessment',
+      'Basic Market Data',
+    ],
+  },
+  pro: {
+    name: 'Pro',
+    price: 2499,
+    period: 'month',
+    badge: 'Most Popular',
+    features: [
+      'Unlimited AI Advisor',
+      'Career Analysis',
+      'Skill Assessment',
+      'Full Market Intelligence',
+      'Career Roadmap Generator',
+      'Coach Booking',
+      'Submit Music',
+    ],
+  },
+  elite: {
+    name: 'Elite',
+    price: 4999,
+    period: 'month',
+    features: [
+      'Everything in Pro',
+      'Priority Coach Matching',
+      'Export Reports',
+      'Direct Coach Messaging',
+      'Early Feature Access',
+      'Dedicated Support',
+    ],
+  },
+};
+
+function getUserTrialStart(user) {
+  if (user.trial_start) return new Date(user.trial_start);
+  if (user.joined) return new Date(user.joined);
+  return new Date();
+}
+
+function getTrialDaysRemaining(user) {
+  const start = getUserTrialStart(user);
+  const elapsed = (Date.now() - start.getTime()) / (1000 * 60 * 60 * 24);
+  return Math.max(0, Math.ceil(FREE_TRIAL_DAYS - elapsed));
+}
+
+function isTrialActive(user) {
+  return getTrialDaysRemaining(user) > 0;
+}
+
+function isSubscriptionActive(user) {
+  if (!user.subscription) return false;
+  if (!user.subscription.active) return false;
+  if (user.subscription.expires && new Date(user.subscription.expires) < new Date()) {
+    user.subscription.active = false;
+    return false;
+  }
+  return true;
+}
+
+function hasFullAccess(user) {
+  return isTrialActive(user) || isSubscriptionActive(user);
+}
+
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '2mb' }));
 
@@ -35,6 +111,34 @@ app.use((req, res, next) => {
 });
 
 app.use(express.static(__dirname));
+
+// ────────────────────────────────────────────
+// SUBSCRIPTION MIDDLEWARE — gates premium APIs
+// ────────────────────────────────────────────
+const PROTECTED_API_PATHS = [
+  '/api/chat', '/api/career-analysis', '/api/skill-assessments',
+  '/api/generate-roadmap', '/api/recommend', '/api/book',
+  '/ml/', '/api/market-intelligence', '/api/search-music', '/api/music-news',
+];
+
+app.use((req, res, next) => {
+  const isProtected = PROTECTED_API_PATHS.some(p => req.path.startsWith(p));
+  if (!isProtected) return next();
+  if (!req.session?.user) return next(); // let route handle auth
+
+  const user = users.find(u => u.id === req.session.user.id);
+  if (!user) return next();
+  if (hasFullAccess(user)) return next();
+
+  return res.status(402).json({
+    subscription_required: true,
+    trial_expired: true,
+    days_used: FREE_TRIAL_DAYS,
+    message: 'Your 7-day free trial has expired. Subscribe to continue using OXYCORP.',
+    plans_url: '/subscription.html',
+    plans: SUBSCRIPTION_PLANS,
+  });
+});
 
 // ────────────────────────────────────────────
 // MUSIC TOPIC CLASSIFIER — Server-Side Gate
@@ -220,7 +324,13 @@ app.post('/api/register', (req, res) => {
     return res.json({ success: false, message: 'Email already registered.' });
   }
   const avatar = name.trim().charAt(0).toUpperCase();
-  const user = { id: nextUserId++, name, email, password, role: role || 'musician', genre: genre || '', experience: experience || '', avatar };
+  const now = new Date().toISOString();
+  const user = {
+    id: nextUserId++, name, email, password,
+    role: role || 'musician', genre: genre || '', experience: experience || '',
+    avatar, joined: now.split('T')[0], trial_start: now,
+    subscription: { plan: 'free', active: false, expires: null },
+  };
   users.push(user);
   res.json({ success: true });
 });
@@ -1316,6 +1426,24 @@ app.post('/api/mpesa/callback', (req, res) => {
     mpesaTransactions[checkoutId].amount  = get('Amount');
     mpesaTransactions[checkoutId].phone   = get('PhoneNumber');
     console.log(`[M-Pesa] Payment confirmed: ${get('MpesaReceiptNumber')} KES ${get('Amount')}`);
+
+    // If this is a subscription payment, activate the plan
+    const tx = mpesaTransactions[checkoutId];
+    if (tx.type === 'subscription' && tx.user_id) {
+      const subUser = users.find(u => u.id === tx.user_id);
+      if (subUser) {
+        const expires = new Date();
+        expires.setDate(expires.getDate() + 30);
+        subUser.subscription = {
+          plan: tx.plan,
+          active: true,
+          expires: expires.toISOString(),
+          started: new Date().toISOString(),
+          receipt: get('MpesaReceiptNumber'),
+        };
+        console.log(`[Subscription] Activated ${tx.plan} plan for ${subUser.name} until ${expires.toISOString()}`);
+      }
+    }
   } else {
     mpesaTransactions[checkoutId].status  = 'failed';
     mpesaTransactions[checkoutId].message = body.ResultDesc;
@@ -1333,6 +1461,106 @@ app.get('/api/mpesa/status/:checkoutId', (req, res) => {
 });
 
 
+// ────────────────────────────────────────────
+// SUBSCRIPTION ENDPOINTS
+// ────────────────────────────────────────────
+app.get('/api/subscription/plans', (req, res) => {
+  res.json({ trial_days: FREE_TRIAL_DAYS, plans: SUBSCRIPTION_PLANS, currency: 'KES' });
+});
+
+app.get('/api/subscription/status', (req, res) => {
+  if (!req.session?.user) {
+    return res.json({ authenticated: false, trial_active: true, has_access: true });
+  }
+  const user = users.find(u => u.id === req.session.user.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  const daysRemaining = getTrialDaysRemaining(user);
+  const trialActive = isTrialActive(user);
+  const subActive = isSubscriptionActive(user);
+
+  res.json({
+    authenticated: true,
+    trial_active: trialActive,
+    trial_days_remaining: daysRemaining,
+    trial_days_total: FREE_TRIAL_DAYS,
+    subscription: user.subscription || { plan: 'free', active: false, expires: null },
+    has_access: trialActive || subActive,
+    trial_start: getUserTrialStart(user).toISOString(),
+  });
+});
+
+app.post('/api/subscribe', async (req, res) => {
+  if (!req.session?.user) {
+    return res.status(401).json({ success: false, message: 'Please sign in first.' });
+  }
+  const { plan, phone } = req.body;
+  if (!plan || !SUBSCRIPTION_PLANS[plan]) {
+    return res.status(400).json({ success: false, message: 'Invalid plan. Choose starter, pro, or elite.' });
+  }
+  if (!phone) {
+    return res.status(400).json({ success: false, message: 'Phone number required for M-Pesa payment.' });
+  }
+
+  const user = users.find(u => u.id === req.session.user.id);
+  if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
+
+  const selectedPlan = SUBSCRIPTION_PLANS[plan];
+  const amount = selectedPlan.price;
+
+  let msisdn;
+  try { msisdn = normaliseMpesaPhone(phone); }
+  catch (err) { return res.status(400).json({ success: false, message: err.message }); }
+
+  try {
+    const token     = await getMpesaToken();
+    const timestamp = mpesaTimestamp();
+    const password  = mpesaPassword(timestamp);
+
+    const stkRes = await fetch(`${MPESA_BASE}/mpesa/stkpush/v1/processrequest`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        BusinessShortCode: MPESA_SHORTCODE, Password: password, Timestamp: timestamp,
+        TransactionType: 'CustomerPayBillOnline', Amount: amount,
+        PartyA: msisdn, PartyB: MPESA_SHORTCODE, PhoneNumber: msisdn,
+        CallBackURL: MPESA_CALLBACK_URL,
+        AccountReference: `OXYCORP-SUB-${plan.toUpperCase()}`,
+        TransactionDesc: `OXYCORP ${selectedPlan.name} Subscription`,
+      }),
+      signal: AbortSignal.timeout(15000),
+    });
+
+    const stkData = await stkRes.json();
+    if (stkData.ResponseCode === '0') {
+      const checkoutId = stkData.CheckoutRequestID;
+      mpesaTransactions[checkoutId] = {
+        status: 'pending', type: 'subscription', plan,
+        user_id: user.id, amount, phone: msisdn,
+        created: new Date().toISOString(),
+      };
+      console.log(`[Subscription] M-Pesa STK → ${msisdn} KES ${amount} (${plan})`);
+      return res.json({
+        success: true, CheckoutRequestID: checkoutId,
+        message: `M-Pesa prompt sent for ${selectedPlan.name} (KES ${amount.toLocaleString()}). Enter your PIN.`,
+      });
+    }
+    return res.status(400).json({ success: false, message: stkData.errorMessage || 'M-Pesa request failed.' });
+  } catch (err) {
+    // M-Pesa unavailable — demo activation
+    console.warn('[Subscription] M-Pesa unavailable, demo activation:', err.message);
+    const expires = new Date();
+    expires.setDate(expires.getDate() + 30);
+    user.subscription = { plan, active: true, expires: expires.toISOString(), started: new Date().toISOString() };
+    console.log(`[Subscription] Demo: ${user.name} → ${selectedPlan.name} until ${expires.toISOString()}`);
+    return res.json({
+      success: true, demo: true,
+      message: `${selectedPlan.name} plan activated! (Demo mode — M-Pesa sandbox unavailable)`,
+      subscription: user.subscription,
+    });
+  }
+});
+
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/home', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/landing', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
@@ -1342,6 +1570,7 @@ app.get('/skills', (req, res) => res.sendFile(path.join(__dirname, 'skill-assess
 app.get('/market', (req, res) => res.sendFile(path.join(__dirname, 'market-intelligence.html')));
 app.get('/roadmap', (req, res) => res.sendFile(path.join(__dirname, 'roadmap.html')));
 app.get('/submit', (req, res) => res.sendFile(path.join(__dirname, 'submit-music.html')));
+app.get('/subscription', (req, res) => res.sendFile(path.join(__dirname, 'subscription.html')));
 
 // ────────────────────────────────────────────
 // START SERVER

@@ -1,6 +1,7 @@
 // ═══════════════════════════════════════════════ STATE
 const state = {
   user: null,
+  subscription: null,
   selectedGenre: null,
   selectedGoal: null,
   currentBookingCoachId: null,
@@ -58,7 +59,19 @@ async function checkSession() {
   try {
     const res = await fetch(`${API_BASE}/session`);
     const data = await res.json();
-    if (data.user) setUser(data.user);
+    if (data.user) {
+      setUser(data.user);
+      fetchSubscriptionStatus();
+    }
+  } catch (e) {}
+}
+
+async function fetchSubscriptionStatus() {
+  try {
+    const res = await fetch(`${API_BASE}/subscription/status`);
+    const data = await res.json();
+    state.subscription = data;
+    updateNavSubscription(data);
   } catch (e) {}
 }
 
@@ -72,9 +85,46 @@ function setUser(user) {
 
 function clearUser() {
   state.user = null;
+  state.subscription = null;
   document.getElementById('nav-auth-guest').classList.remove('hidden');
   document.getElementById('nav-auth-user').classList.add('hidden');
   document.getElementById('nav-avatar').textContent = '♪';
+  const badge = document.getElementById('nav-sub-badge');
+  if (badge) badge.remove();
+}
+
+function updateNavSubscription(data) {
+  // Remove existing badge if any
+  const existing = document.getElementById('nav-sub-badge');
+  if (existing) existing.remove();
+
+  if (!data || !data.authenticated) return;
+
+  const badge = document.createElement('a');
+  badge.id = 'nav-sub-badge';
+  badge.href = 'subscription.html';
+  badge.style.cssText = 'font-size:0.68rem;font-weight:700;padding:0.2rem 0.7rem;border-radius:50px;text-decoration:none;margin-left:0.5rem;transition:all 0.2s;';
+
+  if (data.subscription?.active) {
+    const planName = data.subscription.plan.charAt(0).toUpperCase() + data.subscription.plan.slice(1);
+    badge.textContent = `⚡ ${planName}`;
+    badge.style.background = 'rgba(22,163,106,0.1)';
+    badge.style.color = '#16a34a';
+    badge.style.border = '1px solid rgba(22,163,106,0.2)';
+  } else if (data.trial_active) {
+    badge.textContent = `⏳ ${data.trial_days_remaining}d trial`;
+    badge.style.background = 'rgba(245,158,11,0.1)';
+    badge.style.color = '#f59e0b';
+    badge.style.border = '1px solid rgba(245,158,11,0.2)';
+  } else {
+    badge.textContent = '🔒 Subscribe';
+    badge.style.background = 'rgba(239,68,68,0.1)';
+    badge.style.color = '#ef4444';
+    badge.style.border = '1px solid rgba(239,68,68,0.2)';
+  }
+
+  const userAuth = document.getElementById('nav-auth-user');
+  if (userAuth) userAuth.appendChild(badge);
 }
 
 async function openProfileSettings() {

@@ -145,4 +145,4 @@ http://localhost:3000
 
 ---
 
-*Built by SOUNDPATH · AI-Powered Music Career Intelligence*
+*Built by OXYCORP · AI-Powered Music Career Intelligence*

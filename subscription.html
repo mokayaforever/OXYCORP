@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="OXYCORP subscription plans — unlock AI-powered music career tools with M-Pesa."/>
+  <title>OXYCORP — Pricing & Plans</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="global.css"/>
+  <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512"/>
+  <style>
+    .pricing-hero {
+      text-align: center;
+      padding: 5rem 2rem 3rem;
+      position: relative;
+    }
+    .pricing-hero__badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--green-dim); color: var(--green);
+      font-size: 0.75rem; font-weight: 600; padding: 0.35rem 1rem;
+      border-radius: 50px; margin-bottom: 1.5rem;
+      letter-spacing: 0.03em;
+    }
+    .pricing-hero h1 {
+      font-size: clamp(2rem, 4.5vw, 3rem);
+      margin-bottom: 1rem;
+    }
+    .pricing-hero p {
+      color: var(--muted); font-size: 1rem; max-width: 520px;
+      margin: 0 auto 2.5rem; line-height: 1.7;
+    }
+
+    /* Status card */
+    .sub-status-card {
+      max-width: 560px; margin: 0 auto 3rem;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.5rem 2rem;
+      display: flex; align-items: center; gap: 1.2rem;
+    }
+    .sub-status-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; flex-shrink: 0;
+    }
+    .sub-status-icon--trial { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+    .sub-status-icon--active { background: linear-gradient(135deg, #16a34a, #22c55e); }
+    .sub-status-icon--expired { background: linear-gradient(135deg, #ef4444, #f87171); }
+    .sub-status-info { flex: 1; text-align: left; }
+    .sub-status-info h3 { font-size: 0.95rem; margin-bottom: 0.2rem; }
+    .sub-status-info p { font-size: 0.82rem; color: var(--muted); margin: 0; }
+
+    /* Pricing section */
+    .pricing-section {
+      max-width: 960px; margin: 0 auto; padding: 0 2rem 4rem;
+    }
+    .pricing-section .pricing-grid {
+      margin-bottom: 2.5rem;
+    }
+    .pricing-section .pricing-card {
+      padding: 2.2rem 1.8rem;
+    }
+    .pricing-section .pricing-card__price {
+      font-size: 2.5rem;
+    }
+
+    /* Subscribe form */
+    .subscribe-form {
+      max-width: 500px; margin: 0 auto;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 16px; padding: 2rem;
+      text-align: center;
+    }
+    .subscribe-form h3 {
+      margin-bottom: 0.5rem;
+    }
+    .subscribe-form p {
+      font-size: 0.82rem; color: var(--muted); margin-bottom: 1.2rem;
+    }
+    .subscribe-form .paywall-phone-row {
+      max-width: 100%;
+    }
+
+    /* FAQ */
+    .faq-section {
+      max-width: 680px; margin: 3rem auto 0; padding: 0 2rem;
+    }
+    .faq-section h2 {
+      text-align: center; font-size: 1.5rem; margin-bottom: 2rem;
+    }
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+      padding: 1.2rem 0;
+    }
+    .faq-item summary {
+      font-weight: 600; font-size: 0.92rem; cursor: pointer;
+      color: var(--dark); list-style: none;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .faq-item summary::after { content: '+'; font-size: 1.3rem; color: var(--muted); }
+    .faq-item[open] summary::after { content: '−'; }
+    .faq-item p {
+      margin-top: 0.8rem; font-size: 0.88rem; color: var(--muted); line-height: 1.7;
+    }
+
+    /* Feature comparison */
+    .compare-table {
+      width: 100%; border-collapse: collapse; margin-top: 2rem; font-size: 0.85rem;
+    }
+    .compare-table th, .compare-table td {
+      padding: 0.7rem 1rem; text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .compare-table th:first-child, .compare-table td:first-child {
+      text-align: left; font-weight: 500; color: var(--dark);
+    }
+    .compare-table th {
+      font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--muted);
+      background: var(--surface2);
+    }
+    .compare-table th.col-featured { color: var(--green); }
+    .check { color: var(--green); font-weight: 700; }
+    .dash { color: var(--muted); }
+
+    @media (max-width: 768px) {
+      .sub-status-card { flex-direction: column; text-align: center; }
+      .sub-status-info { text-align: center; }
+      .compare-table { font-size: 0.75rem; }
+      .compare-table th, .compare-table td { padding: 0.5rem 0.4rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <!-- PRICING HERO -->
+  <section class="pricing-hero">
+    <div class="pricing-hero__badge">✦ Plans & Pricing</div>
+    <h1>Invest in Your<br/><em>Music Career</em></h1>
+    <p>Start with a 7-day free trial. Then choose the plan that fits your career stage. Pay securely with M-Pesa.</p>
+
+    <!-- Dynamic status card -->
+    <div class="sub-status-card" id="sub-status-card" style="display:none;">
+      <div class="sub-status-icon" id="sub-status-icon">⏳</div>
+      <div class="sub-status-info">
+        <h3 id="sub-status-title">Loading...</h3>
+        <p id="sub-status-text"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING CARDS -->
+  <section class="pricing-section">
+    <div class="pricing-grid" id="pricing-grid">
+      <!-- Starter -->
+      <div class="pricing-card" id="plan-starter" onclick="selectPlan('starter')">
+        <div class="pricing-card__name">Starter</div>
+        <div class="pricing-card__price">KES 999 <small>/mo</small></div>
+        <div class="pricing-card__period">Billed monthly</div>
+        <ul class="pricing-card__features">
+          <li>AI Advisor (10 chats/day)</li>
+          <li>Career Analysis</li>
+          <li>Skill Assessment</li>
+          <li>Basic Market Data</li>
+        </ul>
+      </div>
+      <!-- Pro -->
+      <div class="pricing-card pricing-card--featured pricing-card--selected" id="plan-pro" onclick="selectPlan('pro')">
+        <div class="plan-badge">Most Popular</div>
+        <div class="pricing-card__name">Pro</div>
+        <div class="pricing-card__price">KES 2,499 <small>/mo</small></div>
+        <div class="pricing-card__period">Billed monthly</div>
+        <ul class="pricing-card__features">
+          <li>Unlimited AI Advisor</li>
+          <li>Career Analysis &amp; Skills</li>
+          <li>Full Market Intelligence</li>
+          <li>Career Roadmap Generator</li>
+          <li>Coach Booking</li>
+          <li>Submit Music</li>
+        </ul>
+      </div>
+      <!-- Elite -->
+      <div class="pricing-card" id="plan-elite" onclick="selectPlan('elite')">
+        <div class="pricing-card__name">Elite</div>
+        <div class="pricing-card__price">KES 4,999 <small>/mo</small></div>
+        <div class="pricing-card__period">Billed monthly</div>
+        <ul class="pricing-card__features">
+          <li>Everything in Pro</li>
+          <li>Priority Coach Matching</li>
+          <li>Export Reports</li>
+          <li>Direct Coach Messaging</li>
+          <li>Early Feature Access</li>
+          <li>Dedicated Support</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Subscribe form -->
+    <div class="subscribe-form" id="subscribe-form">
+      <h3>Subscribe Now</h3>
+      <p>Enter your M-Pesa number to activate your <strong id="selected-plan-name">Pro</strong> plan.</p>
+      <div class="paywall-phone-row">
+        <input type="tel" id="sub-phone" placeholder="M-Pesa phone (07XXXXXXXX)" />
+        <button class="btn btn-primary" id="sub-btn" onclick="handleSubscribe()">Pay with M-Pesa</button>
+      </div>
+      <div id="sub-msg" style="font-size:0.82rem;margin-top:0.8rem;min-height:1.2em;"></div>
+      <p class="paywall-note" style="margin-top:1rem;">Secure payment via Safaricom M-Pesa · Cancel anytime</p>
+    </div>
+
+    <!-- Feature comparison table -->
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Free Trial</th>
+          <th>Starter</th>
+          <th class="col-featured">Pro</th>
+          <th>Elite</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>AI Advisor Chat</td><td class="check">✓</td><td>10/day</td><td class="check">Unlimited</td><td class="check">Unlimited</td></tr>
+        <tr><td>Career Analysis</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+        <tr><td>Skill Assessment</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td><td class="check">✓</td></tr>
+        <tr><td>Market Intelligence</td><td>Basic</td><td>Basic</td><td class="check">Full</td><td class="check">Full</td></tr>
+        <tr><td>Career Roadmap</td><td class="check">✓</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+        <tr><td>Coach Booking</td><td class="check">✓</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+        <tr><td>Submit Music</td><td class="check">✓</td><td class="dash">—</td><td class="check">✓</td><td class="check">✓</td></tr>
+        <tr><td>Priority Coach Matching</td><td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+        <tr><td>Export Reports</td><td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+        <tr><td>Dedicated Support</td><td class="dash">—</td><td class="dash">—</td><td class="dash">—</td><td class="check">✓</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+
+    <details class="faq-item">
+      <summary>How does the 7-day free trial work?</summary>
+      <p>When you create an OXYCORP account, you automatically get 7 days of full access to all features. No payment required upfront. After 7 days, choose a plan to continue.</p>
+    </details>
+
+    <details class="faq-item">
+      <summary>How do I pay with M-Pesa?</summary>
+      <p>Enter your Safaricom phone number (07XXXXXXXX format) and click "Pay with M-Pesa". You'll receive an STK push prompt on your phone. Enter your M-Pesa PIN to confirm payment.</p>
+    </details>
+
+    <details class="faq-item">
+      <summary>Can I change my plan later?</summary>
+      <p>Yes! You can upgrade or downgrade your plan at any time. When upgrading, you'll be charged the difference. When downgrading, the change takes effect at your next billing cycle.</p>
+    </details>
+
+    <details class="faq-item">
+      <summary>What happens if I cancel?</summary>
+      <p>You keep access until the end of your current billing period. After that, your account reverts to the free tier. Your data is always preserved.</p>
+    </details>
+
+    <details class="faq-item">
+      <summary>Is my payment information secure?</summary>
+      <p>Absolutely. All payments are processed through Safaricom's official M-Pesa API. OXYCORP never stores your M-Pesa PIN or financial details.</p>
+    </details>
+  </section>
+
+</div>
+
+<script src="shared.js"></script>
+<script>
+  let currentPlan = 'pro';
+
+  function selectPlan(plan) {
+    currentPlan = plan;
+    document.querySelectorAll('.pricing-card').forEach(card => {
+      card.classList.toggle('pricing-card--selected', card.id === `plan-${plan}`);
+    });
+    const names = { starter: 'Starter', pro: 'Pro', elite: 'Elite' };
+    document.getElementById('selected-plan-name').textContent = names[plan] || plan;
+  }
+
+  async function handleSubscribe() {
+    const phone = document.getElementById('sub-phone')?.value?.trim();
+    const msgEl = document.getElementById('sub-msg');
+    const btn = document.getElementById('sub-btn');
+
+    if (!phone) {
+      msgEl.style.color = '#ef4444';
+      msgEl.textContent = 'Please enter your M-Pesa phone number.';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+    msgEl.style.color = 'var(--green)';
+    msgEl.textContent = 'Sending M-Pesa prompt...';
+
+    try {
+      const res = await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: currentPlan, phone }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        msgEl.style.color = '#16a34a';
+        msgEl.textContent = '✅ ' + data.message;
+        if (data.demo || data.subscription?.active) {
+          setTimeout(() => {
+            loadSubStatus();
+            btn.disabled = false;
+            btn.textContent = 'Pay with M-Pesa';
+          }, 2000);
+        } else if (data.CheckoutRequestID) {
+          pollStatus(data.CheckoutRequestID, msgEl, btn);
+        }
+      } else {
+        msgEl.style.color = '#ef4444';
+        msgEl.textContent = data.message || 'Subscription failed.';
+        btn.disabled = false;
+        btn.textContent = 'Pay with M-Pesa';
+      }
+    } catch (e) {
+      msgEl.style.color = '#ef4444';
+      msgEl.textContent = 'Network error. Please try again.';
+      btn.disabled = false;
+      btn.textContent = 'Pay with M-Pesa';
+    }
+  }
+
+  function pollStatus(checkoutId, msgEl, btn) {
+    let attempts = 0;
+    const iv = setInterval(async () => {
+      attempts++;
+      try {
+        const res = await fetch(`/api/mpesa/status/${checkoutId}`);
+        const data = await res.json();
+        if (data.status === 'success') {
+          clearInterval(iv);
+          msgEl.style.color = '#16a34a';
+          msgEl.textContent = '✅ Payment confirmed! Plan activated.';
+          setTimeout(() => loadSubStatus(), 1500);
+          btn.disabled = false; btn.textContent = 'Pay with M-Pesa';
+        } else if (data.status === 'failed') {
+          clearInterval(iv);
+          msgEl.style.color = '#ef4444';
+          msgEl.textContent = '❌ ' + (data.message || 'Payment failed.');
+          btn.disabled = false; btn.textContent = 'Pay with M-Pesa';
+        }
+      } catch (e) {}
+      if (attempts >= 30) {
+        clearInterval(iv);
+        msgEl.style.color = '#f59e0b';
+        msgEl.textContent = 'Timeout. Check M-Pesa and refresh.';
+        btn.disabled = false; btn.textContent = 'Pay with M-Pesa';
+      }
+    }, 3000);
+  }
+
+  // Load subscription status
+  async function loadSubStatus() {
+    try {
+      const res = await fetch('/api/subscription/status');
+      const data = await res.json();
+      const card = document.getElementById('sub-status-card');
+      const icon = document.getElementById('sub-status-icon');
+      const title = document.getElementById('sub-status-title');
+      const text = document.getElementById('sub-status-text');
+
+      if (!data.authenticated) {
+        card.style.display = 'flex';
+        icon.className = 'sub-status-icon sub-status-icon--trial';
+        icon.textContent = '👤';
+        title.textContent = 'Not signed in';
+        text.textContent = 'Sign in to view your subscription status and start your free trial.';
+        return;
+      }
+
+      card.style.display = 'flex';
+
+      if (data.subscription?.active) {
+        icon.className = 'sub-status-icon sub-status-icon--active';
+        icon.textContent = '✓';
+        const planName = data.subscription.plan.charAt(0).toUpperCase() + data.subscription.plan.slice(1);
+        title.textContent = `${planName} Plan Active`;
+        const exp = new Date(data.subscription.expires).toLocaleDateString();
+        text.textContent = `Your subscription is active until ${exp}.`;
+      } else if (data.trial_active) {
+        icon.className = 'sub-status-icon sub-status-icon--trial';
+        icon.textContent = '⏳';
+        title.textContent = `Free Trial — ${data.trial_days_remaining} day${data.trial_days_remaining !== 1 ? 's' : ''} left`;
+        text.textContent = 'You have full access to all features during your trial.';
+      } else {
+        icon.className = 'sub-status-icon sub-status-icon--expired';
+        icon.textContent = '⚠';
+        title.textContent = 'Trial Expired';
+        text.textContent = 'Subscribe below to continue using OXYCORP.';
+      }
+    } catch (e) {
+      console.warn('[Subscription] Status load failed');
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', loadSubStatus);
+</script>
+</body>
+</html>

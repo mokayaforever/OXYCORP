@@ -148,7 +148,186 @@ document.addEventListener('DOMContentLoaded', () => {
   setupInstallBanner();
   setupLazyImages();
   showOfflineBanner();
+  checkSubscriptionStatus();
 });
+
+// ── Subscription Check ──────────────────────────────────────────────────────
+const FREE_PAGES = ['index.html', '', 'subscription.html'];
+
+async function checkSubscriptionStatus() {
+  const page = window.location.pathname.split('/').pop() || '';
+  if (FREE_PAGES.includes(page)) return;
+
+  try {
+    const res = await fetch('/api/subscription/status');
+    const data = await res.json();
+
+    if (!data.authenticated) return; // not logged in, let page handle it
+
+    if (data.has_access) {
+      // Trial active — show countdown banner
+      if (data.trial_active && !data.subscription?.active && data.trial_days_remaining <= 7) {
+        injectTrialBanner(data.trial_days_remaining);
+      }
+    } else {
+      // Trial expired, no subscription — show paywall
+      injectPaywall();
+    }
+  } catch (e) {
+    // Network error — allow access (graceful degradation)
+    console.warn('[Subscription] Check failed:', e.message);
+  }
+}
+
+function injectTrialBanner(daysLeft) {
+  if (document.getElementById('trial-banner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'trial-banner';
+  banner.className = 'trial-banner';
+  banner.innerHTML = `
+    <div class="trial-banner__text">
+      ⏳ Free trial:
+      <span class="trial-banner__days">🕐 ${daysLeft} day${daysLeft !== 1 ? 's' : ''} left</span>
+    </div>
+    <a href="subscription.html" class="trial-banner__cta">Upgrade Now →</a>
+    <button class="trial-banner__close" onclick="this.parentElement.remove();document.body.classList.remove('has-trial-banner');" aria-label="Close">✕</button>
+  `;
+  document.body.prepend(banner);
+  document.body.classList.add('has-trial-banner');
+}
+
+function injectPaywall() {
+  if (document.getElementById('paywall-overlay')) return;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'paywall-overlay';
+  overlay.className = 'paywall-overlay';
+  overlay.innerHTML = `
+    <div class="paywall-modal">
+      <div class="paywall-header">
+        <div class="paywall-header__icon">♪</div>
+        <h2>Your Free Trial Has Ended</h2>
+        <p>Subscribe to continue using OXYCORP's AI-powered music career tools.</p>
+      </div>
+      <div class="paywall-body">
+        <div class="pricing-grid" id="paywall-pricing">
+          ${buildPricingCard('starter', 'Starter', 999, ['AI Advisor (10 chats/day)', 'Career Analysis', 'Skill Assessment', 'Basic Market Data'])}
+          ${buildPricingCard('pro', 'Pro', 2499, ['Unlimited AI Advisor', 'Career Analysis & Skills', 'Full Market Intelligence', 'Career Roadmap Generator', 'Coach Booking', 'Submit Music'], true)}
+          ${buildPricingCard('elite', 'Elite', 4999, ['Everything in Pro', 'Priority Coach Matching', 'Export Reports', 'Direct Coach Messaging', 'Early Feature Access', 'Dedicated Support'])}
+        </div>
+      </div>
+      <div class="paywall-footer">
+        <div class="paywall-phone-row">
+          <input type="tel" id="paywall-phone" placeholder="M-Pesa phone (07XXXXXXXX)" />
+          <button class="btn btn-primary" id="paywall-subscribe-btn" onclick="handlePaywallSubscribe()">Subscribe via M-Pesa</button>
+        </div>
+        <div id="paywall-msg" style="font-size:0.82rem;margin-top:0.5rem;min-height:1.2em;"></div>
+        <p class="paywall-note">Secure payment via Safaricom M-Pesa · Cancel anytime · <a href="index.html" style="color:var(--green);text-decoration:underline;">Back to Home</a></p>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  // Pre-select Pro
+  selectPaywallPlan('pro');
+}
+
+let selectedPaywallPlan = 'pro';
+
+function buildPricingCard(key, name, price, features, featured = false) {
+  return `
+    <div class="pricing-card ${featured ? 'pricing-card--featured' : ''} ${key === 'pro' ? 'pricing-card--selected' : ''}"
+         id="plan-${key}" onclick="selectPaywallPlan('${key}')">
+      ${featured ? '<div class="plan-badge">Most Popular</div>' : ''}
+      <div class="pricing-card__name">${name}</div>
+      <div class="pricing-card__price">KES ${price.toLocaleString()} <small>/mo</small></div>
+      <div class="pricing-card__period">Billed monthly</div>
+      <ul class="pricing-card__features">
+        ${features.map(f => `<li>${f}</li>`).join('')}
+      </ul>
+    </div>
+  `;
+}
+
+function selectPaywallPlan(plan) {
+  selectedPaywallPlan = plan;
+  document.querySelectorAll('.pricing-card').forEach(card => {
+    card.classList.toggle('pricing-card--selected', card.id === `plan-${plan}`);
+  });
+}
+
+async function handlePaywallSubscribe() {
+  const phone = document.getElementById('paywall-phone')?.value?.trim();
+  const msgEl = document.getElementById('paywall-msg');
+  const btn = document.getElementById('paywall-subscribe-btn');
+
+  if (!phone) {
+    if (msgEl) { msgEl.style.color = '#ef4444'; msgEl.textContent = 'Please enter your M-Pesa phone number.'; }
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Processing...';
+  if (msgEl) { msgEl.style.color = 'var(--green)'; msgEl.textContent = 'Sending M-Pesa prompt...'; }
+
+  try {
+    const res = await fetch('/api/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ plan: selectedPaywallPlan, phone }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      if (msgEl) { msgEl.style.color = '#16a34a'; msgEl.textContent = '✅ ' + data.message; }
+      if (data.demo || data.subscription?.active) {
+        // Demo mode — instant activation, reload after 2s
+        setTimeout(() => window.location.reload(), 2000);
+      } else if (data.CheckoutRequestID) {
+        // Real M-Pesa — poll for payment confirmation
+        pollMpesaStatus(data.CheckoutRequestID, msgEl, btn);
+      }
+    } else {
+      if (msgEl) { msgEl.style.color = '#ef4444'; msgEl.textContent = data.message || 'Subscription failed.'; }
+      btn.disabled = false;
+      btn.textContent = 'Subscribe via M-Pesa';
+    }
+  } catch (e) {
+    if (msgEl) { msgEl.style.color = '#ef4444'; msgEl.textContent = 'Network error. Please try again.'; }
+    btn.disabled = false;
+    btn.textContent = 'Subscribe via M-Pesa';
+  }
+}
+
+async function pollMpesaStatus(checkoutId, msgEl, btn) {
+  let attempts = 0;
+  const maxAttempts = 30;
+  const interval = setInterval(async () => {
+    attempts++;
+    try {
+      const res = await fetch(`/api/mpesa/status/${checkoutId}`);
+      const data = await res.json();
+
+      if (data.status === 'success') {
+        clearInterval(interval);
+        if (msgEl) { msgEl.style.color = '#16a34a'; msgEl.textContent = '✅ Payment confirmed! Activating your plan...'; }
+        setTimeout(() => window.location.reload(), 1500);
+      } else if (data.status === 'failed') {
+        clearInterval(interval);
+        if (msgEl) { msgEl.style.color = '#ef4444'; msgEl.textContent = '❌ Payment failed: ' + (data.message || 'Try again.'); }
+        btn.disabled = false;
+        btn.textContent = 'Subscribe via M-Pesa';
+      }
+    } catch (e) { /* keep polling */ }
+
+    if (attempts >= maxAttempts) {
+      clearInterval(interval);
+      if (msgEl) { msgEl.style.color = '#f59e0b'; msgEl.textContent = 'Payment timeout. Check your M-Pesa and refresh the page.'; }
+      btn.disabled = false;
+      btn.textContent = 'Subscribe via M-Pesa';
+    }
+  }, 3000);
+}
 
 // ── Network Quality ──────────────────────────────────────────────────────────
 function is3G() {
