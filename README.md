@@ -2,6 +2,16 @@
 
 A full-stack AI-powered music career guidance platform combining **HTML5/CSS3**, **Node.js**, **Python ML**, and **Large Language Models**.
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/mokayaforever/OXYCORP)
+
+### 🌐 Live URL
+
+Once deployed, your app will be available at:
+
+```
+https://oxycorp-app.onrender.com
+```
+
 ---
 
 ## 🗂️ Project Structure
