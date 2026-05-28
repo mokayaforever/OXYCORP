@@ -761,8 +761,10 @@
       }, 16);
     }
     function updateTrackCount() {
-      const count = JSON.parse(localStorage.getItem('oxycorp_db') || '[]').length;
-      document.getElementById('trackCount').textContent = count.toLocaleString();
+      const el = document.getElementById('trackCount');
+      if (!el) return;
+      const count = (typeof allTracks !== 'undefined' && allTracks.length) ? allTracks.length : JSON.parse(localStorage.getItem('oxycorp_db') || '[]').length;
+      el.textContent = count.toLocaleString();
     }
     updateTrackCount();
 
@@ -954,20 +956,31 @@
       if (coverFile) formData.append('cover_file', coverFile);
 
       // Submit to API
-      fetch('http://localhost:8000/api/tracks/submit/', {
+      fetch('/api/tracks/submit', {
         method: 'POST',
         body: formData
       })
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) throw new Error('Server returned ' + response.status);
+        return response.json();
+      })
       .then(data => {
         document.getElementById('trackIdBadge').textContent = 'Track ID: ' + data.track_id;
         document.getElementById('panel5').style.display = 'none';
         document.getElementById('stepProgress').style.opacity = '0.4';
         document.getElementById('successPanel').classList.add('show');
+        
+        // Save to localStorage as redundancy
+        if (data.track) {
+          const localTracks = JSON.parse(localStorage.getItem('oxycorp_db') || '[]');
+          localTracks.unshift(data.track);
+          localStorage.setItem('oxycorp_db', JSON.stringify(localTracks));
+        }
+
         buildLibrary();
       })
       .catch(error => {
-        console.error('Error:', error);
+        console.error('Error submitting track:', error);
         alert('Submission failed. Check console for details.');
         btn.textContent = '⚡ Add to Database';
         btn.disabled = false;
@@ -991,15 +1004,28 @@
 
     let allTracks = [];
     let playingId = null;
+    let currentAudio = null;
 
-    function getAllTracks() {
-      // In production, fetch from API: fetch('/api/tracks/')
-      // For demo, use localStorage
+    async function getAllTracks() {
+      try {
+        const response = await fetch('/api/tracks');
+        if (response.ok) {
+          const serverTracks = await response.json();
+          // Merge with localStorage for resilience
+          const localTracks = JSON.parse(localStorage.getItem('oxycorp_db') || '[]');
+          const trackMap = new Map();
+          localTracks.forEach(t => trackMap.set(t.id || t.track_id, t));
+          serverTracks.forEach(t => trackMap.set(t.id || t.track_id, t));
+          return Array.from(trackMap.values());
+        }
+      } catch (err) {
+        console.warn('Failed to fetch from server API, using localStorage:', err);
+      }
       return JSON.parse(localStorage.getItem('oxycorp_db') || '[]');
     }
 
-    function buildLibrary(filter = '', sort = 'recent') {
-      allTracks = getAllTracks();
+    async function buildLibrary(filter = '', sort = 'recent') {
+      allTracks = await getAllTracks();
       let tracks = allTracks.filter(t =>
         !filter || t.title.toLowerCase().includes(filter.toLowerCase()) ||
         t.artist.toLowerCase().includes(filter.toLowerCase()) ||
@@ -1020,7 +1046,7 @@
         const icon = GENRE_EMOJIS[t.genre] || GENRE_EMOJIS['Default'];
         const moodTags = (t.moods || []).slice(0, 2).map(m => `<span class="tag tag-teal" style="font-size:0.55rem;">${m}</span>`).join('');
         return `
-          <div class="track-row" data-id="${t.id}">
+          <div class="track-row" data-id="${t.id || t.track_id}">
             <div class="track-num">${i + 1}</div>
             <div class="track-art">${icon}</div>
             <div class="track-info">
@@ -1030,18 +1056,51 @@
             <div style="display:flex;gap:0.4rem;align-items:center;">${moodTags}</div>
             <span class="track-genre">${escHtml(t.genre)}</span>
             <span class="track-bpm">${t.bpm} BPM</span>
-            <button class="play-btn" onclick="togglePlay('${t.id}', this)" title="Preview">▶</button>
+            <button class="play-btn" onclick="togglePlay('${t.id || t.track_id}', this)" title="Preview">▶</button>
           </div>`;
       }).join('');
     }
 
     function togglePlay(id, btn) {
-      document.querySelectorAll('.play-btn').forEach(b => { b.classList.remove('playing'); b.textContent = '▶'; });
-      if (playingId === id) { playingId = null; return; }
+      const track = allTracks.find(t => (t.id === id || t.track_id === id));
+      
+      if (playingId === id) {
+        if (currentAudio) {
+          currentAudio.pause();
+          currentAudio = null;
+        }
+        playingId = null;
+        btn.classList.remove('playing');
+        btn.textContent = '▶';
+        return;
+      }
+      
+      document.querySelectorAll('.play-btn').forEach(b => {
+        b.classList.remove('playing');
+        b.textContent = '▶';
+      });
+      
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+      }
+      
       playingId = id;
       btn.classList.add('playing');
       btn.textContent = '■';
-      // In production: use Web Audio API or audio element to preview track
+      
+      if (track && track.audio_url) {
+        currentAudio = new Audio(track.audio_url);
+        currentAudio.play().catch(e => {
+          console.warn('Audio playback failed or not supported:', e);
+        });
+        currentAudio.onended = () => {
+          btn.classList.remove('playing');
+          btn.textContent = '▶';
+          playingId = null;
+          currentAudio = null;
+        };
+      }
     }
 
     function filterLibrary(q) { buildLibrary(q, document.querySelector('.sort-select').value); }

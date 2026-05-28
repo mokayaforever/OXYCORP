@@ -1561,6 +1561,118 @@ app.post('/api/subscribe', async (req, res) => {
   }
 });
 
+// ────────────────────────────────────────────
+// MUSIC DATABASE (SUBMITTED SONGS)
+// ────────────────────────────────────────────
+const fs = require('fs');
+const multer = require('multer');
+
+// Create uploads directory if it does not exist
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Serve uploaded files statically
+app.use('/uploads', express.static(uploadsDir));
+
+// Configure multer storage
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    // Generate unique name
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 100 * 1024 * 1024 } // 100MB max file size
+});
+
+// Mock database for tracks
+const submittedTracks = [
+  {
+    id: 'OC-102938',
+    title: 'SuperStars-2',
+    artist: 'Nova Echo',
+    album: 'Midnight Frequency',
+    year: '2025',
+    genre: 'Afrobeats',
+    sub_genre: 'Afro-fusion',
+    bpm: '120',
+    key: 'C Major',
+    duration: '3:42',
+    moods: ['Uplifting', 'Chill'],
+    tags: 'summer vibes, lagos',
+    audio_url: '',
+    cover_url: '',
+    submitted_at: new Date().toISOString()
+  }
+];
+
+// Get all submitted tracks
+app.get('/api/tracks', (req, res) => {
+  res.json(submittedTracks);
+});
+
+// Submit music endpoint
+app.post('/api/tracks/submit', upload.fields([
+  { name: 'audio_file', maxCount: 1 },
+  { name: 'cover_file', maxCount: 1 }
+]), (req, res) => {
+  const { title, artist, album, year, genre, sub_genre, bpm, key, duration, moods, tags } = req.body;
+  const trackId = `OC-${Math.floor(100000 + Math.random() * 900000)}`;
+
+  let audioUrl = '';
+  let coverUrl = '';
+
+  if (req.files && req.files['audio_file'] && req.files['audio_file'][0]) {
+    audioUrl = `/uploads/${req.files['audio_file'][0].filename}`;
+  }
+  if (req.files && req.files['cover_file'] && req.files['cover_file'][0]) {
+    coverUrl = `/uploads/${req.files['cover_file'][0].filename}`;
+  }
+
+  let parsedMoods = [];
+  try {
+    parsedMoods = JSON.parse(moods || '[]');
+  } catch (e) {
+    parsedMoods = moods ? moods.split(',').map(m => m.trim()) : [];
+  }
+
+  const newTrack = {
+    id: trackId,
+    track_id: trackId,
+    title: title || 'Untitled',
+    artist: artist || 'Unknown Artist',
+    album: album || '',
+    year: year || new Date().getFullYear().toString(),
+    genre: genre || 'Pop',
+    sub_genre: sub_genre || '',
+    bpm: bpm || '120',
+    key: key || '',
+    duration: duration || '',
+    moods: parsedMoods,
+    tags: tags || '',
+    audio_url: audioUrl,
+    cover_url: coverUrl,
+    submitted_at: new Date().toISOString()
+  };
+
+  submittedTracks.push(newTrack);
+  console.log(`[Music Submission] New Track Added: ${newTrack.title} by ${newTrack.artist} (ID: ${trackId})`);
+
+  res.json({
+    success: true,
+    track_id: trackId,
+    track: newTrack
+  });
+});
+
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/home', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/landing', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
