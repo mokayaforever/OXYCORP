@@ -41,3 +41,6 @@ ENV/
 # Bunny CDN & Storage
 *.bunny-config
 .bunny-cache/
+
+# Local ML model artifacts
+ml_models/

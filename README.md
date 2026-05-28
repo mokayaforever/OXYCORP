@@ -134,7 +134,24 @@ http://localhost:3000
 
 ---
 
-## 🛠️ Tech Stack
+## � Datasets & Training
+
+The repository now includes local training data for the ML service:
+
+- `datasets/career_training.csv` — music career feature set with target career scores
+- `datasets/skill_training.csv` — skill quiz response data with target skill scores
+
+To train serialized models for production use, run:
+
+```bash
+python ml/train_models.py
+```
+
+This saves trained models to `ml_models/`, which `ml_service.py` will load automatically when available.
+
+---
+
+## �🛠️ Tech Stack
 
 - **Frontend:** HTML5, CSS3, Vanilla JavaScript
 - **Backend:** Node.js, Express.js

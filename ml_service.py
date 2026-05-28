@@ -3,7 +3,7 @@ OXYCORP — Python Machine Learning Service
 FastAPI backend serving ML models for career scoring,
 skill analysis, market intelligence, and recommendations.
 
-Install: pip install fastapi uvicorn scikit-learn numpy pandas
+Install: pip install fastapi uvicorn scikit-learn numpy
 Run:     uvicorn ml_service:app --host 0.0.0.0 --port 8000 --reload
 """
 
@@ -11,6 +11,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
+from pathlib import Path
+import joblib
 import numpy as np
 import json
 import math
@@ -79,6 +81,24 @@ class RecommendationInput(BaseModel):
     engagement_score: float
     revenue_score: float
     goal: str
+
+BASE_DIR = Path(__file__).resolve().parent
+MODEL_DIR = BASE_DIR / 'ml_models'
+CAREER_MODEL_FILE = MODEL_DIR / 'career_model.pkl'
+SKILL_MODEL_FILE = MODEL_DIR / 'skill_model.pkl'
+MODEL_DIR.mkdir(exist_ok=True)
+
+
+def load_trained_pipeline(path: Path):
+    if path.exists():
+        try:
+            return joblib.load(path)
+        except Exception:
+            return None
+    return None
+
+CAREER_PIPELINE = load_trained_pipeline(CAREER_MODEL_FILE)
+SKILL_PIPELINE = load_trained_pipeline(SKILL_MODEL_FILE)
 
 # ─────────────────────────────────────────────────────
 # ML MODEL — Career Scoring (simulates trained model)
@@ -300,6 +320,25 @@ def predict_career_score(data: CareerInput):
     """Run career scoring ML model on artist data."""
     try:
         result = career_model.predict(data)
+
+        if CAREER_PIPELINE is not None:
+            payload = {
+                "genre": data.genre,
+                "career_stage": data.career_stage,
+                "spotify_listeners": float(data.spotify_listeners),
+                "monthly_streams": float(data.monthly_streams),
+                "youtube_views": float(data.youtube_views),
+                "instagram_followers": float(data.instagram_followers),
+                "tiktok_followers": float(data.tiktok_followers),
+                "engagement_rate": float(data.engagement_rate),
+                "gigs_per_year": float(data.gigs_per_year),
+                "avg_show_revenue": float(data.avg_show_revenue),
+                "annual_revenue": float(data.annual_revenue),
+            }
+            trained_score = CAREER_PIPELINE.predict([payload])[0]
+            result["career_score"] = max(0, min(100, int(round(trained_score))))
+            result["model"] = "soundpath-career-rf-trained-v1"
+
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Model error: {str(e)}")
@@ -309,6 +348,13 @@ def analyse_skills(data: SkillInput):
     """Analyse quiz answers and return skill profile."""
     try:
         result = skill_model.analyse(data.answers)
+
+        if SKILL_PIPELINE is not None:
+            answers_array = np.array(data.answers, dtype=np.float32).reshape(1, -1)
+            trained_score = SKILL_PIPELINE.predict(answers_array)[0]
+            result["overall_score"] = max(0, min(100, int(round(trained_score))))
+            result["model"] = "soundpath-skill-trained-v1"
+
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Skill model error: {str(e)}")
