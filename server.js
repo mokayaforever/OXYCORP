@@ -621,9 +621,10 @@ app.post('/api/career-analysis', (req, res) => {
     (ttFollowers > 10000 ? 15 : 0));
 
   // Calculate revenue score
+  // Revenue scoring scaled for KES (1,000,000 KES baseline)
   const revScore = Math.min(100, (
-    (annualRevenue / 10000) * 40 +
-    (gigsPerYear * showRevenue / 5000) * 30
+    (annualRevenue / 1000000) * 40 +
+    (gigsPerYear * showRevenue / 500000) * 30
   ));
 
   const careerScore = Math.max(0, Math.min(100, Math.round(
@@ -644,7 +645,7 @@ app.post('/api/career-analysis', (req, res) => {
   if (engagementRate < 3) {
     insights.push('Improve engagement: Post consistently, use stories, collaborate with influencers.');
   }
-  if (annualRevenue < 5000) {
+  if (annualRevenue < 600000) {
     insights.push('Diversify income: Explore merch, Patreon, sync licensing, teaching.');
   }
   if (gigsPerYear < 12) {
@@ -1257,8 +1258,11 @@ Format as 3 phases (Foundation, Growth, Breakthrough), each with:
 1. 3 key milestones with specific KPIs
 2. 5 action items
 3. A realistic revenue target
+ -
+Be specific, data-driven, and actionable.
 
-Be specific, data-driven, and actionable.`;
+Important: Express all revenue figures and targets in Kenyan Shillings (KES). When specifying monthly or annual amounts, format them like "KES 50,000 / month" or "KES 1,200,000 / year". Do not use USD or other currencies.
+`;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {

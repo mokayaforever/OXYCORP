@@ -3,9 +3,12 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate, login
-from django.contrib.auth.models import User
+import logging
+
 from .models import User, UserProfile
 from .serializers import UserSerializer, UserProfileSerializer
+
+logger = logging.getLogger(__name__)
 
 class IsOwnerOrReadOnly(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
@@ -66,28 +69,33 @@ def register_view(request):
     if not name or not email or not password:
         return Response({'success': False, 'message': 'Name, email, and password are required'})
     
-    if User.objects.filter(email=email).exists():
-        return Response({'success': False, 'message': 'Email already exists'})
-    
-    # Create user
-    user = User.objects.create_user(
-        username=email,  # Use email as username
-        email=email,
-        password=password,
-        first_name=name.split(' ')[0],
-        last_name=' '.join(name.split(' ')[1:]) if len(name.split(' ')) > 1 else '',
-        artist_name=name
-    )
-    
-    # Create profile if additional data provided
-    if genre or experience:
-        UserProfile.objects.create(
-            user=user,
-            genre=genre,
-            career_stage=experience
+    try:
+        if User.objects.filter(email=email).exists():
+            return Response({'success': False, 'message': 'Email already exists'})
+
+        # Create user
+        user = User.objects.create_user(
+            username=email,  # Use email as username
+            email=email,
+            password=password,
+            first_name=name.split(' ')[0],
+            last_name=' '.join(name.split(' ')[1:]) if len(name.split(' ')) > 1 else '',
+            artist_name=name
         )
-    
-    return Response({'success': True})
+
+        # Create profile if additional data provided
+        if genre or experience:
+            UserProfile.objects.create(
+                user=user,
+                genre=genre,
+                career_stage=experience
+            )
+
+        logger.info('Registered new user %s (id=%s)', email, getattr(user, 'id', None))
+        return Response({'success': True})
+    except Exception as e:
+        logger.exception('Failed to register user %s', email)
+        return Response({'success': False, 'message': 'Registration failed', 'error': str(e)}, status=500)
 
 @api_view(['GET'])
 def session_view(request):

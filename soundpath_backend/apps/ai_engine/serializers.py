@@ -93,9 +93,11 @@ class CareerAnalysisSerializer(serializers.ModelSerializer):
                        (1 if data['ig_followers'] > 5000 else 0) * 10 +
                        (1 if data['tt_followers'] > 10000 else 0) * 15)
         
+        # Adjust revenue scoring for Kenyan Shillings (KES)
+        # Use 1,000,000 KES as the baseline that previously represented ~10,000 (USD-based) in legacy logic.
         rev_score = min(100, (
-            (data['annual_revenue'] / 10000) * 40 +      # 10k revenue = 40 points
-            (data['gigs_per_year'] * data['show_revenue'] / 5000) * 30  # gigs revenue
+            (data['annual_revenue'] / 1000000) * 40 +      # 1,000,000 KES = 40 points
+            (data['gigs_per_year'] * data['show_revenue'] / 500000) * 30  # gigs revenue (divide by 500k KES)
         ))
         
         # Genre adjustment (some genres have different benchmarks)
@@ -118,7 +120,8 @@ class CareerAnalysisSerializer(serializers.ModelSerializer):
         
         if data['engagement_rate'] < 3:
             insights.append("Improve engagement: Post consistently, use stories, collaborate with influencers.")
-        if data['annual_revenue'] < 5000:
+        # Treat low annual revenue threshold in KES (approx. ~5k USD -> ~600k KES)
+        if data['annual_revenue'] < 600000:
             insights.append("Diversify income: Explore merch, Patreon, sync licensing, teaching.")
         if data['gigs_per_year'] < 12:
             insights.append("Increase live shows: Book more gigs to build fanbase and revenue.")

@@ -218,13 +218,13 @@
               <input type="number" id="gigsPerYear" placeholder="e.g. 12" value="12" />
             </div>
             <div class="input-wrap">
-              <label>Avg. Show Revenue (USD)</label>
-              <input type="number" id="showRevenue" placeholder="e.g. 500" value="500" />
+              <label>Avg. Show Revenue (KES)</label>
+              <input type="number" id="showRevenue" placeholder="e.g. 50,000" value="50000" />
             </div>
           </div>
           <div class="input-wrap">
-            <label>Annual Music Revenue (USD)</label>
-            <input type="number" id="annualRevenue" placeholder="e.g. 8000" value="8000" />
+            <label>Annual Music Revenue (KES)</label>
+            <input type="number" id="annualRevenue" placeholder="e.g. 1,200,000" value="1200000" />
           </div>
 
           <p class="form-section-title">Goals & Focus</p>
@@ -357,7 +357,8 @@
       // Calculate component scores (simplified)
       const reachScore = Math.min(100, (inputData.spotify_listeners / 1000 + inputData.total_streams / 100000 + inputData.yt_views / 50000 + (inputData.ig_followers + inputData.tt_followers) / 10000) * 10);
       const engScore = Math.min(100, inputData.engagement_rate * 10);
-      const revScore = Math.min(100, (inputData.annual_revenue / 10000 + inputData.gigs_per_year * inputData.show_revenue / 1000) * 5);
+      // Revenue scoring scaled for KES: use 1,000,000 KES baseline and 500,000 KES per-show scaling
+      const revScore = Math.min(100, (inputData.annual_revenue / 1000000 + inputData.gigs_per_year * inputData.show_revenue / 500000) * 5);
       const growthPct = Math.round(Math.random() * 50 + 10); // Mock growth
 
       let grade, colour;
