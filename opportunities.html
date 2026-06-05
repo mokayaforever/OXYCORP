@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Find paid music opportunities — gigs, session work, sync placements, teaching, and industry roles on OXYCORP."/>
+  <title>OXYCORP — Opportunities | Music Jobs & Gigs</title>
+  <link rel="stylesheet" href="global.css"/>
+  <link rel="icon" href="/icon-512.png" type="image/png" sizes="512x512"/>
+  <style>
+    .opp-hero { padding: 7rem 0 3rem; }
+    .opp-hero h1 { font-family: var(--font-d); font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; }
+    .opp-hero p { color: var(--muted); max-width: 560px; margin-top: 1rem; line-height: 1.7; }
+
+    /* Stats bar */
+    .opp-stats { display: flex; gap: 2rem; margin: 2rem 0 2.5rem; flex-wrap: wrap; }
+    .opp-stat { display: flex; flex-direction: column; }
+    .opp-stat__val { font-family: var(--font-d); font-size: 1.8rem; font-weight: 700; color: var(--green); line-height: 1; }
+    .opp-stat__label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-top: 0.3rem; }
+
+    /* Filters */
+    .opp-filters { display: flex; gap: 0.8rem; margin-bottom: 2rem; flex-wrap: wrap; align-items: center; }
+    .opp-search { position: relative; flex: 1; min-width: 220px; }
+    .opp-search input { padding-left: 2.4rem; }
+    .opp-search::before { content: '🔍'; position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%); font-size: 0.85rem; pointer-events: none; }
+    .cat-tabs { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+    .cat-tab {
+      font-family: var(--font-b); font-size: 0.75rem; font-weight: 600;
+      padding: 0.4rem 1rem; border: 1px solid var(--border); border-radius: 50px;
+      background: transparent; color: var(--muted); cursor: pointer; transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .cat-tab:hover { border-color: var(--green); color: var(--green); }
+    .cat-tab.active { background: var(--green); color: #fff; border-color: var(--green); }
+
+    /* Grid */
+    .opp-layout { display: grid; grid-template-columns: 1fr 320px; gap: 2.5rem; padding-bottom: 6rem; }
+    .opp-list { display: flex; flex-direction: column; gap: 1rem; }
+
+    /* Opportunity Card */
+    .opp-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--r);
+      padding: 1.6rem; transition: all 0.25s; cursor: pointer; position: relative;
+    }
+    .opp-card:hover { border-color: rgba(37,99,235,0.25); box-shadow: 0 8px 30px rgba(0,0,0,0.05); transform: translateY(-2px); }
+    .opp-card__top { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.8rem; }
+    .opp-card__title { font-family: var(--font-d); font-size: 1.1rem; font-weight: 600; }
+    .opp-card__pay {
+      font-family: var(--font-d); font-size: 0.92rem; font-weight: 700; color: var(--green);
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .opp-card__meta { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
+    .opp-card__meta span {
+      font-size: 0.72rem; font-weight: 600; color: var(--muted);
+      display: flex; align-items: center; gap: 0.3rem;
+    }
+    .opp-card__desc { font-size: 0.85rem; color: var(--muted); line-height: 1.7; margin-bottom: 1rem;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .opp-card__reqs { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .opp-card__reqs span {
+      font-size: 0.68rem; font-weight: 500; padding: 0.25rem 0.6rem;
+      background: var(--surface2); border: 1px solid var(--border); border-radius: 50px; color: var(--dark3);
+    }
+    .opp-card__footer { display: flex; justify-content: space-between; align-items: center; }
+    .opp-card__poster { font-size: 0.78rem; color: var(--muted); }
+    .opp-card__poster strong { color: var(--dark); }
+    .opp-card__apps { font-size: 0.72rem; color: var(--muted); }
+    .apply-btn {
+      font-family: var(--font-b); font-size: 0.78rem; font-weight: 600;
+      background: var(--green); color: #fff; border: none; padding: 0.5rem 1.2rem;
+      border-radius: 50px; cursor: pointer; transition: all 0.2s;
+    }
+    .apply-btn:hover { background: var(--green-lt); transform: translateY(-1px); }
+    .apply-btn.applied { background: var(--surface2); color: var(--green); border: 1px solid var(--green); pointer-events: none; }
+
+    /* Category badge */
+    .cat-badge {
+      font-size: 0.62rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+      padding: 0.2rem 0.6rem; border-radius: 50px; display: inline-block;
+    }
+    .cat-badge--live { background: rgba(239,68,68,0.1); color: #ef4444; }
+    .cat-badge--session { background: rgba(168,85,247,0.1); color: #a855f7; }
+    .cat-badge--production { background: rgba(59,130,246,0.1); color: #3b82f6; }
+    .cat-badge--sync { background: rgba(234,179,8,0.1); color: #ca8a04; }
+    .cat-badge--songwriting { background: rgba(236,72,153,0.1); color: #ec4899; }
+    .cat-badge--teaching { background: rgba(16,185,129,0.1); color: #10b981; }
+    .cat-badge--content { background: rgba(99,102,241,0.1); color: #6366f1; }
+    .cat-badge--industry { background: rgba(107,114,128,0.1); color: #6b7280; }
+
+    /* Sidebar */
+    .opp-sidebar { position: sticky; top: 90px; align-self: start; display: flex; flex-direction: column; gap: 1.5rem; }
+    .opp-sidebar-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 1.5rem; }
+    .opp-sidebar-card h4 {
+      font-family: var(--font-b); font-size: 0.78rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em; color: var(--green); margin-bottom: 1rem;
+    }
+    .cat-stat { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+    .cat-stat:last-child { border-bottom: none; }
+    .cat-stat__name { color: var(--dark3); display: flex; align-items: center; gap: 0.5rem; }
+    .cat-stat__count { font-family: var(--font-d); font-weight: 700; color: var(--green); }
+
+    /* Post form */
+    .post-toggle {
+      width: 100%; padding: 0.8rem; border: 2px dashed var(--border); border-radius: var(--r);
+      background: transparent; color: var(--green); font-size: 0.85rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; font-family: var(--font-b);
+    }
+    .post-toggle:hover { border-color: var(--green); background: var(--green-dim); }
+    .post-form { display: none; }
+    .post-form.show { display: block; animation: fadeUp 0.3s ease; }
+
+    .no-results { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+    .no-results__icon { font-size: 3rem; margin-bottom: 1rem; }
+
+    @media (max-width: 900px) {
+      .opp-layout { grid-template-columns: 1fr; }
+      .opp-sidebar { position: static; }
+      .opp-stats { gap: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+    <section class="opp-hero">
+      <div class="container">
+        <h1>Music <em>Opportunities</em></h1>
+        <p>Find paid work in the music industry — gigs, session work, sync placements, teaching positions, and more. Turn your talent into income.</p>
+        <div class="opp-stats" id="oppStats"></div>
+      </div>
+    </section>
+
+    <div class="container">
+      <!-- Filters -->
+      <div class="opp-filters">
+        <div class="opp-search">
+          <input type="text" placeholder="Search opportunities..." id="oppSearch" oninput="filterOpps()"/>
+        </div>
+      </div>
+      <div class="cat-tabs" id="catTabs" style="margin-bottom:2rem;">
+        <button class="cat-tab active" onclick="setCategory('all')">All</button>
+        <button class="cat-tab" onclick="setCategory('live')">🎤 Live</button>
+        <button class="cat-tab" onclick="setCategory('session')">🎵 Session</button>
+        <button class="cat-tab" onclick="setCategory('production')">🎛️ Production</button>
+        <button class="cat-tab" onclick="setCategory('sync')">📺 Sync</button>
+        <button class="cat-tab" onclick="setCategory('songwriting')">📝 Songwriting</button>
+        <button class="cat-tab" onclick="setCategory('teaching')">🎓 Teaching</button>
+        <button class="cat-tab" onclick="setCategory('content')">📱 Content</button>
+        <button class="cat-tab" onclick="setCategory('industry')">🏢 Industry</button>
+      </div>
+
+      <div class="opp-layout">
+        <!-- Listings -->
+        <div class="opp-list" id="oppList">
+          <div class="typing"><span></span><span></span><span></span></div>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="opp-sidebar">
+          <div class="opp-sidebar-card">
+            <h4>Categories</h4>
+            <div id="catStats"></div>
+          </div>
+
+          <div class="opp-sidebar-card">
+            <h4>Average Pay by Type</h4>
+            <div id="payStats"></div>
+          </div>
+
+          <div class="opp-sidebar-card" style="background:linear-gradient(135deg,var(--surface),rgba(37,99,235,0.04));border-color:rgba(37,99,235,0.15);">
+            <h4>Post an Opportunity</h4>
+            <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1rem;line-height:1.6;">Are you a coach, studio owner, or industry professional? Post a gig for OXYCORP musicians.</p>
+            <button class="post-toggle" onclick="togglePostForm()">+ Post an Opportunity</button>
+            <div class="post-form" id="postForm">
+              <div style="margin-top:1.2rem;">
+                <div class="input-wrap"><label>Title *</label><input type="text" id="post-title" placeholder="e.g. Session Drummer Needed"/></div>
+                <div class="input-wrap"><label>Category *</label>
+                  <select id="post-category">
+                    <option value="live">Live Performance</option>
+                    <option value="session">Session Work</option>
+                    <option value="production">Production</option>
+                    <option value="sync">Sync Placement</option>
+                    <option value="songwriting">Songwriting</option>
+                    <option value="teaching">Teaching</option>
+                    <option value="content">Content Creation</option>
+                    <option value="industry">Industry Role</option>
+                  </select>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;">
+                  <div class="input-wrap"><label>Min Pay (KES)</label><input type="number" id="post-paymin" placeholder="e.g. 10000"/></div>
+                  <div class="input-wrap"><label>Max Pay (KES)</label><input type="number" id="post-paymax" placeholder="e.g. 30000"/></div>
+                </div>
+                <div class="input-wrap"><label>Location</label><input type="text" id="post-location" placeholder="e.g. Nairobi"/></div>
+                <div class="input-wrap"><label>Description *</label><textarea id="post-desc" rows="3" placeholder="Describe the opportunity..."></textarea></div>
+                <div class="input-wrap"><label>Your Name / Company</label><input type="text" id="post-poster" placeholder="e.g. Studio XYZ"/></div>
+                <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="submitOpp()">Post Opportunity</button>
+                <div id="post-msg" style="font-size:0.82rem;margin-top:0.6rem;min-height:1em;text-align:center;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="opp-sidebar-card">
+            <h4>Quick Links</h4>
+            <a href="guidance.html" style="display:block;padding:0.5rem 0;color:var(--green);font-size:0.85rem;text-decoration:none;border-bottom:1px solid var(--border);">→ Career Guidance</a>
+            <a href="community.html" style="display:block;padding:0.5rem 0;color:var(--green);font-size:0.85rem;text-decoration:none;border-bottom:1px solid var(--border);">→ Artist Community</a>
+            <a href="coaches.html" style="display:block;padding:0.5rem 0;color:var(--green);font-size:0.85rem;text-decoration:none;">→ Find a Coach</a>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    let allOpps = [];
+    let currentCategory = 'all';
+    const CAT_ICONS = { live:'🎤', session:'🎵', production:'🎛️', sync:'📺', songwriting:'📝', teaching:'🎓', content:'📱', industry:'🏢' };
+    const CAT_LABELS = { live:'Live Performance', session:'Session Work', production:'Production', sync:'Sync Placement', songwriting:'Songwriting', teaching:'Teaching', content:'Content Creation', industry:'Industry Role' };
+
+    async function loadOpps() {
+      try {
+        const res = await fetch('/api/opportunities');
+        const data = await res.json();
+        if (data.success) {
+          allOpps = data.opportunities;
+          renderStats(data.stats);
+          renderCatStats(data.stats);
+          renderPayStats();
+          filterOpps();
+        }
+      } catch(e) { console.error('Failed to load opportunities:', e); }
+    }
+
+    function renderStats(stats) {
+      document.getElementById('oppStats').innerHTML = `
+        <div class="opp-stat"><div class="opp-stat__val">${stats.open}</div><div class="opp-stat__label">Open Opportunities</div></div>
+        <div class="opp-stat"><div class="opp-stat__val">${stats.total_applications.toLocaleString()}</div><div class="opp-stat__label">Applications</div></div>
+        <div class="opp-stat"><div class="opp-stat__val">${stats.categories.length}</div><div class="opp-stat__label">Categories</div></div>
+        <div class="opp-stat"><div class="opp-stat__val">KES ${(stats.avg_pay / 1000).toFixed(0)}K</div><div class="opp-stat__label">Avg. Pay</div></div>
+      `;
+    }
+
+    function renderCatStats() {
+      const counts = {};
+      allOpps.forEach(o => { counts[o.category] = (counts[o.category] || 0) + 1; });
+      document.getElementById('catStats').innerHTML = Object.entries(counts)
+        .sort((a,b) => b[1] - a[1])
+        .map(([cat, count]) => `
+          <div class="cat-stat">
+            <span class="cat-stat__name">${CAT_ICONS[cat] || '📋'} ${CAT_LABELS[cat] || cat}</span>
+            <span class="cat-stat__count">${count}</span>
+          </div>
+        `).join('');
+    }
+
+    function renderPayStats() {
+      const catPay = {};
+      allOpps.forEach(o => {
+        if (!catPay[o.category]) catPay[o.category] = [];
+        catPay[o.category].push((o.pay_min + o.pay_max) / 2);
+      });
+      document.getElementById('payStats').innerHTML = Object.entries(catPay)
+        .map(([cat, pays]) => {
+          const avg = Math.round(pays.reduce((a,b) => a+b, 0) / pays.length);
+          return `<div class="cat-stat"><span class="cat-stat__name">${CAT_LABELS[cat] || cat}</span><span class="cat-stat__count">KES ${avg.toLocaleString()}</span></div>`;
+        }).join('');
+    }
+
+    function setCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      filterOpps();
+    }
+
+    function filterOpps() {
+      const search = document.getElementById('oppSearch').value.toLowerCase();
+      let filtered = allOpps;
+      if (currentCategory !== 'all') filtered = filtered.filter(o => o.category === currentCategory);
+      if (search) filtered = filtered.filter(o =>
+        o.title.toLowerCase().includes(search) || o.description.toLowerCase().includes(search) ||
+        o.poster.toLowerCase().includes(search)
+      );
+      renderOpps(filtered);
+    }
+
+    function renderOpps(opps) {
+      const list = document.getElementById('oppList');
+      if (opps.length === 0) {
+        list.innerHTML = `<div class="no-results"><div class="no-results__icon">🔍</div><h3>No opportunities found</h3><p style="margin-top:0.5rem;">Try a different category or search term.</p></div>`;
+        return;
+      }
+      list.innerHTML = opps.map(o => `
+        <div class="opp-card" id="opp-${o.id}">
+          <div class="opp-card__top">
+            <div>
+              <span class="cat-badge cat-badge--${o.category}">${CAT_LABELS[o.category] || o.category}</span>
+              <div class="opp-card__title" style="margin-top:0.5rem;">${o.title}</div>
+            </div>
+            <div class="opp-card__pay">KES ${o.pay_min.toLocaleString()}–${o.pay_max.toLocaleString()}<br><small style="font-weight:400;font-size:0.7rem;color:var(--muted);">${o.pay_period}</small></div>
+          </div>
+          <div class="opp-card__meta">
+            <span>📍 ${o.location}</span>
+            <span>📅 Deadline: ${o.deadline || 'Open'}</span>
+            <span>👥 ${o.applications} applied</span>
+          </div>
+          <div class="opp-card__desc">${o.description}</div>
+          <div class="opp-card__reqs">${(o.requirements || []).map(r => `<span>${r}</span>`).join('')}</div>
+          <div class="opp-card__footer">
+            <div class="opp-card__poster">Posted by <strong>${o.poster}</strong></div>
+            <button class="apply-btn" onclick="applyToOpp(${o.id}, event)">Apply Now →</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function applyToOpp(id, e) {
+      e.stopPropagation();
+      const btn = e.target;
+      btn.disabled = true;
+      btn.textContent = 'Applying...';
+      try {
+        const res = await fetch(`/api/opportunities/${id}/apply`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({}) });
+        const data = await res.json();
+        if (data.success) {
+          btn.textContent = '✓ Applied';
+          btn.classList.add('applied');
+        } else {
+          btn.textContent = data.message || 'Failed';
+          btn.disabled = false;
+          setTimeout(() => { btn.textContent = 'Apply Now →'; }, 2000);
+        }
+      } catch(e) {
+        btn.textContent = 'Sign in to apply';
+        btn.disabled = false;
+        setTimeout(() => { btn.textContent = 'Apply Now →'; }, 2000);
+      }
+    }
+
+    function togglePostForm() {
+      document.getElementById('postForm').classList.toggle('show');
+    }
+
+    async function submitOpp() {
+      const title = document.getElementById('post-title').value;
+      const category = document.getElementById('post-category').value;
+      const desc = document.getElementById('post-desc').value;
+      const msg = document.getElementById('post-msg');
+      if (!title || !desc) { msg.style.color='#ef4444'; msg.textContent='Title and description required.'; return; }
+      try {
+        const res = await fetch('/api/opportunities', {
+          method: 'POST', headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({
+            title, category, description: desc,
+            pay_min: parseInt(document.getElementById('post-paymin').value) || 0,
+            pay_max: parseInt(document.getElementById('post-paymax').value) || 0,
+            location: document.getElementById('post-location').value || 'Nairobi',
+            poster: document.getElementById('post-poster').value || 'Anonymous',
+          }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          msg.style.color='#16a34a'; msg.textContent='✅ Opportunity posted!';
+          loadOpps();
+          setTimeout(() => { document.getElementById('postForm').classList.remove('show'); msg.textContent=''; }, 2000);
+        } else { msg.style.color='#ef4444'; msg.textContent=data.message; }
+      } catch(e) { msg.style.color='#ef4444'; msg.textContent='Network error.'; }
+    }
+
+    window.addEventListener('load', loadOpps);
+  </script>
+</body>
+</html>

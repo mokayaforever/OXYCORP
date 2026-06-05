@@ -1677,6 +1677,146 @@ app.post('/api/tracks/submit', upload.fields([
   });
 });
 
+// ────────────────────────────────────────────
+// OPPORTUNITIES / JOB BOARD
+// ────────────────────────────────────────────
+const opportunities = [
+  { id: 1, title: 'Wedding Band Guitarist Needed', category: 'live', pay_min: 15000, pay_max: 35000, pay_period: 'per event', location: 'Nairobi', deadline: '2026-06-30', posted: '2026-05-28', description: 'Looking for a versatile guitarist for a wedding band performing 2-3 events per month across Nairobi. Must be able to play pop, R&B, and Afrobeats covers. Own equipment required.', requirements: ['3+ years live experience', 'Own guitar & amp', 'Available weekends', 'Versatile genre knowledge'], poster: 'EventMasters Kenya', poster_type: 'company', applications: 12, status: 'open' },
+  { id: 2, title: 'Studio Session Vocalist — Afrobeats Album', category: 'session', pay_min: 8000, pay_max: 20000, pay_period: 'per session', location: 'Westlands, Nairobi', deadline: '2026-06-20', posted: '2026-06-01', description: 'Seeking female vocalists for background vocals and harmonies on a 12-track Afrobeats album. Sessions at Ogopa Studios. 4-6 sessions needed over 3 weeks.', requirements: ['Strong vocal range', 'Harmony experience', 'Afrobeats familiarity', 'Studio recording experience'], poster: 'Producer Otieno', poster_type: 'individual', applications: 8, status: 'open' },
+  { id: 3, title: 'Beat Producer for Gengetone EP', category: 'production', pay_min: 5000, pay_max: 15000, pay_period: 'per beat', location: 'Remote / Nairobi', deadline: '2026-07-15', posted: '2026-06-02', description: 'Need 6 original Gengetone/Drill beats for upcoming EP. Must deliver high-quality 808-heavy productions with Sheng-friendly arrangements. Stems required.', requirements: ['FL Studio or Ableton proficiency', 'Gengetone production experience', 'Deliver stems + master', 'Quick turnaround'], poster: 'Mziki Collective', poster_type: 'artist', applications: 22, status: 'open' },
+  { id: 4, title: 'Music for Safaricom Ad Campaign', category: 'sync', pay_min: 150000, pay_max: 500000, pay_period: 'flat fee', location: 'Nairobi', deadline: '2026-06-25', posted: '2026-05-30', description: 'Major telco seeking original uplifting Afro-pop track for 60-second TV commercial airing across East Africa. Must be sync-ready with clean version, instrumental, and stems.', requirements: ['Professional production quality', 'Sync-ready masters', 'Instrumental version', 'Rights clearance'], poster: 'Leo Burnett Kenya', poster_type: 'company', applications: 45, status: 'open' },
+  { id: 5, title: 'Songwriter for Gospel Album', category: 'songwriting', pay_min: 10000, pay_max: 30000, pay_period: 'per song', location: 'Kiambu / Remote', deadline: '2026-07-01', posted: '2026-06-01', description: 'Contemporary gospel artist seeking co-writers for upcoming 10-track album. Need songwriters who can blend Swahili and English lyrics with modern worship and CCM styles.', requirements: ['Gospel songwriting experience', 'Swahili & English fluency', 'Music theory knowledge', 'Publishing split negotiable'], poster: 'Neema Wanjiku', poster_type: 'artist', applications: 6, status: 'open' },
+  { id: 6, title: 'Music Teacher — Piano & Guitar', category: 'teaching', pay_min: 40000, pay_max: 65000, pay_period: 'per month', location: 'Karen, Nairobi', deadline: '2026-06-28', posted: '2026-05-25', description: 'International school seeking part-time music teacher for piano and guitar lessons. 15-20 hours per week across beginner to intermediate students aged 8-18.', requirements: ['Teaching certification preferred', 'Piano & guitar proficiency', 'Experience with children', 'Background check required'], poster: 'Brookhouse International', poster_type: 'company', applications: 9, status: 'open' },
+  { id: 7, title: 'TikTok Music Content Creator', category: 'content', pay_min: 25000, pay_max: 50000, pay_period: 'per month', location: 'Remote', deadline: '2026-06-30', posted: '2026-06-03', description: 'Artist management company seeking a creative content specialist to produce daily TikTok and Instagram Reels content for 3 signed artists. Must understand music trends and viral content strategies.', requirements: ['Strong TikTok portfolio', 'Video editing skills', 'Music industry knowledge', 'Content calendar management'], poster: 'Oxygène Management', poster_type: 'company', applications: 18, status: 'open' },
+  { id: 8, title: 'Sound Engineer — Live Events', category: 'industry', pay_min: 20000, pay_max: 45000, pay_period: 'per event', location: 'Nairobi / Mombasa', deadline: '2026-07-10', posted: '2026-06-02', description: 'Event production company hiring freelance sound engineers for concert tours and festival setups. Must be experienced with large-scale PA systems and monitor mixing.', requirements: ['3+ years live sound experience', 'Digital console proficiency', 'Own transport preferred', 'Available for travel'], poster: 'SoundCheck Events', poster_type: 'company', applications: 7, status: 'open' },
+  { id: 9, title: 'DJ Residency — Alchemist Bar', category: 'live', pay_min: 15000, pay_max: 25000, pay_period: 'per night', location: 'Westlands, Nairobi', deadline: '2026-06-18', posted: '2026-06-01', description: 'Upscale venue seeking DJ for Saturday night residency. Genre focus: Amapiano, Afrobeats, Deep House. Must have own controller/CDJs and strong crowd-reading skills.', requirements: ['2+ years DJ experience', 'Own equipment', 'Amapiano/Afrobeats specialty', 'Professional appearance'], poster: 'The Alchemist Bar', poster_type: 'company', applications: 31, status: 'open' },
+  { id: 10, title: 'Mixing Engineer for Hip-Hop Mixtape', category: 'production', pay_min: 5000, pay_max: 12000, pay_period: 'per track', location: 'Remote / Pipeline, Nairobi', deadline: '2026-07-05', posted: '2026-06-03', description: 'Rising Kenyan rapper needs mixing and mastering for 14-track debut mixtape. Looking for an engineer who understands the Kenyan drill/trap sound and can deliver radio-ready mixes.', requirements: ['Pro Tools or Logic Pro', 'Hip-hop mixing portfolio', 'Quick turnaround (2 weeks)', 'Mastering included'], poster: 'Drillz Ke', poster_type: 'artist', applications: 11, status: 'open' },
+  { id: 11, title: 'Backup Dancers for Music Video', category: 'live', pay_min: 8000, pay_max: 15000, pay_period: 'per shoot', location: 'South B, Nairobi', deadline: '2026-06-15', posted: '2026-06-04', description: 'Afro-pop artist shooting a high-budget music video and needs 6 backup dancers for a 2-day shoot. Choreography will be provided. Must be comfortable with Afrobeats and contemporary dance.', requirements: ['Dance experience', 'Available 2 full days', 'Afrobeats dance style', 'Age 18-30'], poster: 'Sanaa Njoroge', poster_type: 'artist', applications: 25, status: 'open' },
+  { id: 12, title: 'Music Blog Writer / Journalist', category: 'content', pay_min: 15000, pay_max: 35000, pay_period: 'per month', location: 'Remote', deadline: '2026-07-01', posted: '2026-06-02', description: 'East African music publication seeking freelance writers to cover the Kenyan music scene. Need 4-6 articles per month including artist interviews, album reviews, and industry analysis.', requirements: ['Strong writing portfolio', 'Knowledge of East African music', 'Interview skills', 'SEO basics'], poster: 'Mdundo Magazine', poster_type: 'company', applications: 14, status: 'open' },
+  { id: 13, title: 'Music for Netflix Kenya Series', category: 'sync', pay_min: 200000, pay_max: 1500000, pay_period: 'flat fee', location: 'Nairobi', deadline: '2026-06-22', posted: '2026-05-29', description: 'Music supervisor seeking original African-inspired tracks for upcoming Netflix Kenya drama series. Need a range of moods: tension, romance, celebration, and contemplation. Instrumental and vocal tracks accepted.', requirements: ['Professional studio quality', 'African instrumentation', 'Stems delivery', 'Music clearance docs'], poster: 'Netflix East Africa', poster_type: 'company', applications: 67, status: 'open' },
+  { id: 14, title: 'A&R Scout — East Africa', category: 'industry', pay_min: 60000, pay_max: 100000, pay_period: 'per month', location: 'Nairobi', deadline: '2026-06-30', posted: '2026-06-01', description: 'International record label opening an East Africa desk. Seeking an A&R scout to identify, evaluate, and recommend emerging talent across Kenya, Tanzania, and Uganda.', requirements: ['Deep knowledge of East African music', '3+ years industry experience', 'Strong artist network', 'Analytical skills'], poster: 'Empire Distribution', poster_type: 'company', applications: 19, status: 'open' },
+  { id: 15, title: 'Vocal Coach — Online Classes', category: 'teaching', pay_min: 2000, pay_max: 5000, pay_period: 'per session', location: 'Remote (Zoom)', deadline: '2026-07-15', posted: '2026-06-03', description: 'Music education startup seeking vocal coaches to deliver 1-on-1 online lessons to students across East Africa. Flexible scheduling, you set your own hours. Platform handles booking and payments.', requirements: ['Vocal training background', 'Teaching experience', 'Stable internet connection', 'Patient and encouraging'], poster: 'TuneUp Academy', poster_type: 'company', applications: 8, status: 'open' },
+  { id: 16, title: 'Jingle Composer — Radio Ads', category: 'songwriting', pay_min: 30000, pay_max: 80000, pay_period: 'per jingle', location: 'Nairobi / Remote', deadline: '2026-07-10', posted: '2026-06-04', description: 'Advertising agency needs composers for commercial jingles and sonic branding. Multiple ongoing briefs for FMCG, banking, and telecom clients. Fast turnaround required.', requirements: ['Commercial composition experience', 'Quick production skills', 'Multiple genre versatility', 'Professional DAW setup'], poster: 'Scanad Kenya', poster_type: 'company', applications: 13, status: 'open' },
+  { id: 17, title: 'Festival Stage Manager — Koroga', category: 'industry', pay_min: 35000, pay_max: 55000, pay_period: 'per event', location: 'Nairobi', deadline: '2026-06-20', posted: '2026-06-01', description: 'Koroga Festival seeking experienced stage managers for upcoming quarterly events. Responsible for artist check-in, stage changeovers, and coordinating with sound and lighting teams.', requirements: ['Event management experience', 'Calm under pressure', 'Strong communication', 'Available for rehearsal + event days'], poster: 'Koroga Festival', poster_type: 'company', applications: 10, status: 'open' },
+  { id: 18, title: 'Album Cover Designer & Visualizer', category: 'content', pay_min: 15000, pay_max: 40000, pay_period: 'per project', location: 'Remote / Nairobi', deadline: '2026-07-01', posted: '2026-06-05', description: 'Hip-hop crew seeking a graphic designer for album artwork, single covers, and animated music visualizers for YouTube. Must understand hip-hop visual culture and Kenyan street aesthetics.', requirements: ['Photoshop/Illustrator proficiency', 'Motion graphics a plus', 'Hip-hop visual culture knowledge', 'Portfolio required'], poster: 'Mziki Collective', poster_type: 'artist', applications: 16, status: 'open' },
+];
+let nextOpportunityId = 19;
+const opportunityApplications = [];
+
+app.get('/api/opportunities', (req, res) => {
+  let filtered = [...opportunities];
+  const { category, location, min_pay, search, status } = req.query;
+  if (category && category !== 'all') filtered = filtered.filter(o => o.category === category);
+  if (location) filtered = filtered.filter(o => o.location.toLowerCase().includes(location.toLowerCase()));
+  if (min_pay) filtered = filtered.filter(o => o.pay_max >= parseInt(min_pay));
+  if (status) filtered = filtered.filter(o => o.status === status);
+  if (search) {
+    const s = search.toLowerCase();
+    filtered = filtered.filter(o =>
+      o.title.toLowerCase().includes(s) ||
+      o.description.toLowerCase().includes(s) ||
+      o.poster.toLowerCase().includes(s) ||
+      o.category.toLowerCase().includes(s)
+    );
+  }
+  filtered.sort((a, b) => new Date(b.posted) - new Date(a.posted));
+  const stats = {
+    total: opportunities.length,
+    open: opportunities.filter(o => o.status === 'open').length,
+    total_applications: opportunities.reduce((s, o) => s + o.applications, 0),
+    categories: [...new Set(opportunities.map(o => o.category))],
+    avg_pay: Math.round(opportunities.reduce((s, o) => s + (o.pay_min + o.pay_max) / 2, 0) / opportunities.length),
+  };
+  res.json({ success: true, opportunities: filtered, stats });
+});
+
+app.post('/api/opportunities', (req, res) => {
+  const { title, category, pay_min, pay_max, pay_period, location, deadline, description, requirements, poster } = req.body;
+  if (!title || !category || !description) {
+    return res.status(400).json({ success: false, message: 'Title, category, and description are required.' });
+  }
+  const opp = {
+    id: nextOpportunityId++,
+    title, category: category || 'industry',
+    pay_min: pay_min || 0, pay_max: pay_max || 0, pay_period: pay_period || 'negotiable',
+    location: location || 'Nairobi', deadline: deadline || '',
+    posted: new Date().toISOString().split('T')[0],
+    description, requirements: requirements || [],
+    poster: poster || 'Anonymous', poster_type: 'individual',
+    applications: 0, status: 'open',
+  };
+  opportunities.push(opp);
+  res.json({ success: true, opportunity: opp });
+});
+
+app.post('/api/opportunities/:id/apply', (req, res) => {
+  if (!req.session?.user) {
+    return res.status(401).json({ success: false, message: 'Please sign in to apply.' });
+  }
+  const opp = opportunities.find(o => o.id === parseInt(req.params.id));
+  if (!opp) return res.status(404).json({ success: false, message: 'Opportunity not found.' });
+  const existing = opportunityApplications.find(a => a.opp_id === opp.id && a.user_id === req.session.user.id);
+  if (existing) return res.json({ success: false, message: 'You have already applied to this opportunity.' });
+  const application = {
+    id: opportunityApplications.length + 1,
+    opp_id: opp.id, user_id: req.session.user.id,
+    user_name: req.session.user.name, applied: new Date().toISOString(),
+    message: req.body.message || '',
+  };
+  opportunityApplications.push(application);
+  opp.applications++;
+  res.json({ success: true, message: `Applied to "${opp.title}" successfully!` });
+});
+
+// ────────────────────────────────────────────
+// COMMUNITY / ARTIST DIRECTORY
+// ────────────────────────────────────────────
+const connectionRequests = [];
+
+app.get('/api/community', (req, res) => {
+  const { genre, experience, role, search } = req.query;
+  let artists = users
+    .filter(u => u.role === 'musician' && u.bio)
+    .map(({ password, ...rest }) => rest);
+  if (genre) artists = artists.filter(a => a.genre && a.genre.toLowerCase().includes(genre.toLowerCase()));
+  if (experience) artists = artists.filter(a => a.experience === experience);
+  if (search) {
+    const s = search.toLowerCase();
+    artists = artists.filter(a =>
+      (a.name && a.name.toLowerCase().includes(s)) ||
+      (a.genre && a.genre.toLowerCase().includes(s)) ||
+      (a.bio && a.bio.toLowerCase().includes(s))
+    );
+  }
+  const stats = {
+    total_artists: artists.length,
+    genres: [...new Set(artists.map(a => a.genre).filter(Boolean))],
+    levels: { beginner: artists.filter(a => a.experience === 'beginner').length, intermediate: artists.filter(a => a.experience === 'intermediate').length, advanced: artists.filter(a => a.experience === 'advanced').length },
+    total_streams: artists.reduce((s, a) => s + (a.monthly_streams || 0), 0),
+  };
+  res.json({ success: true, artists, stats });
+});
+
+app.post('/api/connect', (req, res) => {
+  if (!req.session?.user) return res.status(401).json({ success: false, message: 'Please sign in to connect.' });
+  const { artist_id, message } = req.body;
+  if (!artist_id) return res.status(400).json({ success: false, message: 'Artist ID required.' });
+  const target = users.find(u => u.id === parseInt(artist_id));
+  if (!target) return res.status(404).json({ success: false, message: 'Artist not found.' });
+  const existing = connectionRequests.find(c => c.from_id === req.session.user.id && c.to_id === target.id);
+  if (existing) return res.json({ success: false, message: 'Connection request already sent.' });
+  connectionRequests.push({
+    id: connectionRequests.length + 1,
+    from_id: req.session.user.id, from_name: req.session.user.name,
+    to_id: target.id, to_name: target.name,
+    message: message || '', created: new Date().toISOString(), status: 'pending',
+  });
+  res.json({ success: true, message: `Connection request sent to ${target.name}!` });
+});
+
+// ────────────────────────────────────────────
+// ROUTES
+// ────────────────────────────────────────────
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/home', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 app.get('/landing', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
@@ -1687,6 +1827,8 @@ app.get('/market', (req, res) => res.sendFile(path.join(__dirname, 'market-intel
 app.get('/roadmap', (req, res) => res.sendFile(path.join(__dirname, 'roadmap.html')));
 app.get('/submit', (req, res) => res.sendFile(path.join(__dirname, 'submit-music.html')));
 app.get('/subscription', (req, res) => res.sendFile(path.join(__dirname, 'subscription.html')));
+app.get('/opportunities', (req, res) => res.sendFile(path.join(__dirname, 'opportunities.html')));
+app.get('/community', (req, res) => res.sendFile(path.join(__dirname, 'community.html')));
 
 // ────────────────────────────────────────────
 // START SERVER

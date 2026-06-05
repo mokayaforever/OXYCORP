@@ -10,12 +10,12 @@ function injectNav() {
   const pages = [
     { href: 'index.html',               label: 'Home',       file: 'index.html' },
     { href: 'advisor.html',             label: 'AI Advisor', file: 'advisor.html' },
+    { href: 'opportunities.html',       label: 'Jobs',       file: 'opportunities.html' },
+    { href: 'community.html',           label: 'Community',  file: 'community.html' },
     { href: 'market-intelligence.html', label: 'Market',     file: 'market-intelligence.html' },
     { href: 'coaches.html',             label: 'Coaches',    file: 'coaches.html' },
     { href: 'guidance.html',            label: 'Guidance',   file: 'guidance.html' },
-    { href: 'roadmap.html',             label: 'Roadmap',    file: 'roadmap.html' },
     { href: 'career-analysis.html',     label: 'Analysis',   file: 'career-analysis.html' },
-    { href: 'submit-music.html',        label: 'Submit',     file: 'submit-music.html' },
   ];
 
   const linksHtml = pages.map(p => `
@@ -40,8 +40,8 @@ function injectMobileTabBar(active) {
   const tabs = [
     { href: 'index.html',               icon: '🏠', label: 'Home',    file: 'index.html' },
     { href: 'advisor.html',             icon: '🤖', label: 'Advisor', file: 'advisor.html' },
-    { href: 'coaches.html',             icon: '🎓', label: 'Coaches', file: 'coaches.html' },
-    { href: 'market-intelligence.html', icon: '📊', label: 'Market',  file: 'market-intelligence.html' },
+    { href: 'opportunities.html',       icon: '💼', label: 'Jobs',    file: 'opportunities.html' },
+    { href: 'community.html',           icon: '🤝', label: 'Network', file: 'community.html' },
     { href: 'guidance.html',            icon: '🧭', label: 'Guidance',file: 'guidance.html' },
   ];
 
@@ -73,43 +73,57 @@ function injectFooter() {
       <div class="footer-grid">
         <div class="footer-brand">
           <a href="index.html" class="logo">OXY<span>CORP</span></a>
-          <p class="footer-desc">Empowering musicians to build sustainable, fulfilling careers through expert guidance and community.</p>
+          <p class="footer-desc">Empowering musicians to build sustainable, fulfilling careers through expert guidance, real employment, and community.</p>
+          <div class="footer-social" style="display:flex;gap:0.8rem;margin-top:1.2rem;">
+            <a href="#" style="color:#b3b3b3;text-decoration:none;font-size:1.1rem;transition:color 0.2s;" title="Instagram">📷</a>
+            <a href="#" style="color:#b3b3b3;text-decoration:none;font-size:1.1rem;transition:color 0.2s;" title="YouTube">▶️</a>
+            <a href="#" style="color:#b3b3b3;text-decoration:none;font-size:1.1rem;transition:color 0.2s;" title="TikTok">🎵</a>
+            <a href="#" style="color:#b3b3b3;text-decoration:none;font-size:1.1rem;transition:color 0.2s;" title="Twitter">𝕏</a>
+          </div>
         </div>
         <div class="footer-col">
           <h4>Platform</h4>
           <ul>
             <li><a href="advisor.html">AI Advisor</a></li>
+            <li><a href="opportunities.html">Job Opportunities</a></li>
+            <li><a href="community.html">Artist Community</a></li>
             <li><a href="market-intelligence.html">Market Intelligence</a></li>
             <li><a href="coaches.html">Meet Coaches</a></li>
             <li><a href="guidance.html">Career Guidance</a></li>
             <li><a href="career-analysis.html">Career Analysis</a></li>
             <li><a href="roadmap.html">Roadmap</a></li>
-            <li><a href="submit-music.html">Submit Music</a></li>
-            <li><a href="coach-dashboard.html">Coach Dashboard</a></li>
           </ul>
         </div>
         <div class="footer-col">
-          <h4>Resources</h4>
+          <h4>Employment</h4>
           <ul>
-            <li><a href="#">Documentation</a></li>
-            <li><a href="#">API Reference</a></li>
-            <li><a href="#">Case Studies</a></li>
-            <li><a href="#">Blog</a></li>
+            <li><a href="opportunities.html">Browse Gigs</a></li>
+            <li><a href="opportunities.html">Sync Placements</a></li>
+            <li><a href="opportunities.html">Session Work</a></li>
+            <li><a href="opportunities.html">Teaching Jobs</a></li>
+            <li><a href="community.html">Find Collaborators</a></li>
+            <li><a href="submit-music.html">Submit Music</a></li>
           </ul>
         </div>
         <div class="footer-col">
           <h4>Company</h4>
           <ul>
-            <li><a href="#">About</a></li>
-            <li><a href="#">Privacy</a></li>
-            <li><a href="#">Terms</a></li>
-            <li><a href="#">Contact</a></li>
+            <li><a href="#">About OXYCORP</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+            <li><a href="#">Contact Us</a></li>
+            <li><a href="subscription.html">Pricing</a></li>
           </ul>
         </div>
       </div>
       <div class="footer-bottom">
-        <p>© 2026 OXYCORP</p>
-        
+        <p>© 2026 OXYCORP — AI-Powered Music Career Intelligence</p>
+        <div class="tech-pills">
+          <span class="tech-pill">AI Advisor</span>
+          <span class="tech-pill">ML Analytics</span>
+          <span class="tech-pill">M-Pesa</span>
+          <span class="tech-pill">PWA</span>
+        </div>
       </div>
     </div>
   `;
